@@ -1,49 +1,54 @@
+"use client";
+
+import { useState } from "react";
+
+import { CustomerHeader } from "@/components/customers/customer-header";
+import { CustomerStats } from "@/components/customers/customer-stats";
+import { CustomerFilters } from "@/components/customers/customer-filter";
 import { CustomerTable } from "@/components/customers/customer-table";
 
 export default function CustomersPage() {
+  const [search, setSearch] = useState("");
+  const [riskTiers, setRiskTiers] = useState<string[]>([]);
+  const [contract, setContract] = useState("all");
+  const [revenueRange, setRevenueRange] = useState("all");
+  const [healthScore, setHealthScore] = useState([0, 100]);
+
   return (
-    <div className="p-8">
-      <h1 className="text-4xl font-bold">
-        Customers
-      </h1>
+    <div className="min-h-screen bg-[#F5F1EA]">
+      <header className="border-b border-[#D8D0C5] bg-[#FBFAF7] px-12 py-6">
+        <CustomerHeader search={search} onSearchChange={setSearch} />
+      </header>
 
-      <p className="mt-2 text-muted-foreground">
-        Monitor and manage customer accounts
-      </p>
+      <main className="space-y-8 px-12 py-8">
+        <CustomerStats />
+        { /* Customer Filter */ }
+        <CustomerFilters
+          riskTiers={riskTiers}
+          onRiskTiersChange={setRiskTiers}
+          contract={contract}
+          onContractChange={setContract}
+          revenueRange={revenueRange}
+          onRevenueRangeChange={setRevenueRange}
+          healthScore={healthScore}
+          onHealthScoreChange={setHealthScore}
+          onClearFilters={() => {
+            setRiskTiers([]);
+            setContract("all");
+            setRevenueRange("all");
+            setHealthScore([0, 100]);
+          }}
+        />
+        { /* Customer Table */ }
+        <CustomerTable
+          search={search}
+          riskTiers={riskTiers}
+          contract={contract}
+          revenueRange={revenueRange}
+          healthScore={healthScore}
+        />
+      </main>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-4">
-        <div className="rounded-lg border p-6">
-          <p>Total Customers</p>
-          <h2 className="text-3xl font-bold">
-            2847
-          </h2>
-        </div>
-
-        <div className="rounded-lg border p-6">
-          <p>Healthy</p>
-          <h2 className="text-3xl font-bold">
-            1243
-          </h2>
-        </div>
-
-        <div className="rounded-lg border p-6">
-          <p>At Risk</p>
-          <h2 className="text-3xl font-bold">
-            612
-          </h2>
-        </div>
-
-        <div className="rounded-lg border p-6">
-          <p>Critical</p>
-          <h2 className="text-3xl font-bold">
-            187
-          </h2>
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <CustomerTable />
-      </div>
     </div>
   );
 }
