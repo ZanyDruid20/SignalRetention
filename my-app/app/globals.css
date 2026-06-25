@@ -81,6 +81,17 @@
   --sidebar-ring: oklch(0.708 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  --dashboard-chart-grid: #d9d0c4;
+  --dashboard-chart-muted: #6b7280;
+  --dashboard-chart-text: #2f2118;
+  --dashboard-chart-border: #e7ded1;
+  --dashboard-chart-tooltip: #ffffff;
+  --dashboard-churn-line: #a53d13;
+  --dashboard-churn-fill: #f4e4dc;
+  --dashboard-retention-line: #1e6b3b;
+  --dashboard-retention-fill: #dff0e6;
+  --dashboard-risk-line: #5b3a29;
+  --dashboard-health-bar: #5a3b26;
 }
 
 .dark {
@@ -115,6 +126,17 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --dashboard-chart-grid: #453a32;
+  --dashboard-chart-muted: #a9a29c;
+  --dashboard-chart-text: #fffaf4;
+  --dashboard-chart-border: #3a312a;
+  --dashboard-chart-tooltip: #1f1a16;
+  --dashboard-churn-line: #ff4d57;
+  --dashboard-churn-fill: #3c1d1b;
+  --dashboard-retention-line: #45d467;
+  --dashboard-retention-fill: #203522;
+  --dashboard-risk-line: #b98b67;
+  --dashboard-health-bar: #66432b;
 }
 
 @layer base {

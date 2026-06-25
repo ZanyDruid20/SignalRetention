@@ -33,7 +33,7 @@ export function ScenarioSimulator() {
   };
 
   return (
-    <Card className="border-[#E7DED1]">
+    <Card className="border-[#E7DED1] bg-white dark:border-border dark:bg-card">
       <CardHeader>
         <CardTitle className="text-3xl font-bold">
           Scenario Simulator
@@ -142,7 +142,7 @@ export function ScenarioSimulator() {
             </Button>
           </div>
 
-          <div className="rounded-xl bg-[#F8F5F0] p-6">
+          <div className="rounded-xl bg-[#F8F5F0] p-6 dark:bg-muted/40">
             <h3 className="mb-6 text-2xl font-semibold">
               Projected Impact
             </h3>
@@ -157,7 +157,7 @@ export function ScenarioSimulator() {
               </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg border p-4 dark:border-border dark:bg-background/40">
                   <p className="text-sm text-muted-foreground">
                     Revenue Saved
                   </p>
@@ -167,7 +167,7 @@ export function ScenarioSimulator() {
                   </h4>
                 </div>
 
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg border p-4 dark:border-border dark:bg-background/40">
                   <p className="text-sm text-muted-foreground">
                     Churn Reduction
                   </p>
@@ -177,7 +177,7 @@ export function ScenarioSimulator() {
                   </h4>
                 </div>
 
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg border p-4 dark:border-border dark:bg-background/40">
                   <p className="text-sm text-muted-foreground">
                     Customers Retained
                   </p>
@@ -187,7 +187,7 @@ export function ScenarioSimulator() {
                   </h4>
                 </div>
 
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg border p-4 dark:border-border dark:bg-background/40">
                   <p className="text-sm text-muted-foreground">
                     ROI
                   </p>

@@ -47,7 +47,7 @@ export function CustomerFilters({
   }
 
   return (
-    <div className="rounded-xl border border-[#E7DED1] bg-white p-6">
+    <div className="rounded-xl border border-[#E7DED1] bg-white p-6 dark:border-[#3A312A] dark:bg-[#1F1A16]">
       <div className="mb-8 flex items-center gap-2">
         <SlidersHorizontal className="h-5 w-5" />
         <h2 className="text-2xl font-bold">Filters</h2>

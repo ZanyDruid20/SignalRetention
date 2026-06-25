@@ -24,7 +24,7 @@ export function DatasetsHeader({ search, onSearchChange }: DatasetsHeaderProps) 
                 <Input
                     value={search}
                     onChange={(event) => onSearchChange(event.target.value)}
-                    className="h-12 rounded-2xl border-[#D8D0C5] bg-white pl-14 text-base shadow-none"
+                    className="h-12 rounded-2xl border-[#D8D0C5] bg-white pl-14 text-base shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]"
                     placeholder="Search datasets..."
                 />
             </div>

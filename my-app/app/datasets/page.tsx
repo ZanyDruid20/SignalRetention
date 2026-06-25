@@ -11,8 +11,8 @@ export default function DatasetsPage() {
   const [search, setSearch] = useState("");
 
   return (
-    <div className="min-h-screen bg-[#F5F1EA]">
-      <header className="border-b border-[#D8D0C5] bg-[#FBFAF7] px-12 py-6">
+    <div className="min-h-screen bg-[#F5F1EA] dark:bg-background">
+      <header className="border-b border-[#D8D0C5] bg-[#FBFAF7] px-12 py-6 dark:border-border dark:bg-background">
         <DatasetsHeader search={search} onSearchChange={setSearch} />
       </header>
 

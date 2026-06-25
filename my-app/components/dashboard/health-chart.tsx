@@ -27,7 +27,7 @@ const healthDistributionData = [
 
 export function HealthDistributionChart() {
   return (
-    <Card className="border-[#E7DED1]">
+    <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
       <CardHeader>
         <CardTitle className="text-3xl font-bold">
           Health Score Distribution
@@ -53,7 +53,7 @@ export function HealthDistributionChart() {
               <CartesianGrid
                 strokeDasharray="4 4"
                 vertical={false}
-                stroke="#D9D0C4"
+                stroke="var(--dashboard-chart-grid)"
               />
 
               <XAxis
@@ -62,7 +62,7 @@ export function HealthDistributionChart() {
                 tickLine={false}
                 tick={{
                   fontSize: 16,
-                  fill: "#6B7280",
+                  fill: "var(--dashboard-chart-muted)",
                 }}
               />
 
@@ -73,7 +73,7 @@ export function HealthDistributionChart() {
                 ticks={[0, 25, 50, 75, 100]}
                 tick={{
                   fontSize: 16,
-                  fill: "#6B7280",
+                  fill: "var(--dashboard-chart-muted)",
                 }}
               />
 
@@ -81,13 +81,22 @@ export function HealthDistributionChart() {
                 cursor={{ fill: "transparent" }}
                 contentStyle={{
                   borderRadius: "12px",
-                  border: "1px solid #E7DED1",
+                  border: "1px solid var(--dashboard-chart-border)",
+                  background: "var(--dashboard-chart-tooltip)",
+                  color: "var(--dashboard-chart-text)",
+                }}
+                labelStyle={{
+                  color: "var(--dashboard-chart-text)",
+                  fontWeight: 700,
+                }}
+                itemStyle={{
+                  color: "var(--dashboard-risk-line)",
                 }}
               />
 
               <Bar
                 dataKey="customers"
-                fill="#5A3B26"
+                fill="var(--dashboard-health-bar)"
                 radius={[10, 10, 0, 0]}
               />
             </BarChart>

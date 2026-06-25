@@ -15,10 +15,10 @@ export function CustomerStats() {
     <div className="grid max-w-4xl gap-4 md:grid-cols-2">
 
       {/* Total Customers */}
-      <Card className="rounded-2xl border-[#DED8CF] bg-[#FBFAF7] py-0 shadow-none">
+      <Card className="rounded-2xl border-[#DED8CF] bg-[#FBFAF7] py-0 shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
         <CardContent className="flex h-32 items-center gap-4 p-5">
 
-          <div className="flex size-14 items-center justify-center rounded-xl bg-[#F5ECE4]">
+          <div className="flex size-14 items-center justify-center rounded-xl bg-[#F5ECE4] dark:bg-muted">
             <Users className="h-6 w-6 text-[#5A3B26]" />
           </div>
 
@@ -36,10 +36,10 @@ export function CustomerStats() {
       </Card>
 
       {/* High Risk */}
-      <Card className="rounded-2xl border-[#DED8CF] bg-[#FBFAF7] py-0 shadow-none">
+      <Card className="rounded-2xl border-[#DED8CF] bg-[#FBFAF7] py-0 shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
         <CardContent className="flex h-32 items-center gap-4 p-5">
 
-          <div className="flex size-14 items-center justify-center rounded-xl bg-[#FCEEE8]">
+          <div className="flex size-14 items-center justify-center rounded-xl bg-[#FCEEE8] dark:bg-destructive/20">
             <AlertTriangle className="h-6 w-6 text-[#A53D13]" />
           </div>
 
@@ -57,10 +57,10 @@ export function CustomerStats() {
       </Card>
 
       {/* Revenue Risk */}
-      <Card className="rounded-2xl border-[#DED8CF] bg-[#FBFAF7] py-0 shadow-none">
+      <Card className="rounded-2xl border-[#DED8CF] bg-[#FBFAF7] py-0 shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
         <CardContent className="flex h-32 items-center gap-4 p-5">
 
-          <div className="flex size-14 items-center justify-center rounded-xl bg-[#F5ECE4]">
+          <div className="flex size-14 items-center justify-center rounded-xl bg-[#F5ECE4] dark:bg-muted">
             <DollarSign className="h-6 w-6 text-[#A53D13]" />
           </div>
 
@@ -78,10 +78,10 @@ export function CustomerStats() {
       </Card>
 
       {/* Avg Health */}
-      <Card className="rounded-2xl border-[#DED8CF] bg-[#FBFAF7] py-0 shadow-none">
+      <Card className="rounded-2xl border-[#DED8CF] bg-[#FBFAF7] py-0 shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
         <CardContent className="flex h-32 items-center gap-4 p-5">
 
-          <div className="flex size-14 items-center justify-center rounded-xl bg-[#EAF3EA]">
+          <div className="flex size-14 items-center justify-center rounded-xl bg-[#EAF3EA] dark:bg-green-950/30">
             <Activity className="h-6 w-6 text-green-700" />
           </div>
 

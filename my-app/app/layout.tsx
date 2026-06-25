@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/Theme/theme-provider";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -39,7 +40,9 @@ export default function RootLayout({
         suppressHydrationWarning
         className={cn(inter.variable, geistSans.variable, geistMono.variable)}
       >
-        <body suppressHydrationWarning>{children}</body>
+        <body suppressHydrationWarning>
+          <ThemeProvider>{children}</ThemeProvider>
+        </body>
       </html>
     </ClerkProvider>
   );

@@ -64,17 +64,44 @@ function TrendChart({
     <div className="h-62.5">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data}>
-          <CartesianGrid strokeDasharray="4 4" />
+          <CartesianGrid
+            stroke="var(--dashboard-chart-grid)"
+            strokeDasharray="4 4"
+          />
 
-          <XAxis dataKey="month" />
+          <XAxis
+            dataKey="month"
+            axisLine={false}
+            tickLine={false}
+            tick={{
+              fill: "var(--dashboard-chart-muted)",
+              fontSize: 14,
+            }}
+          />
 
           <YAxis
             domain={domain}
             tickFormatter={(value) => `${value}%`}
+            axisLine={false}
+            tickLine={false}
+            tick={{
+              fill: "var(--dashboard-chart-muted)",
+              fontSize: 14,
+            }}
           />
 
           <Tooltip
             formatter={(value) => [`${value}%`]}
+            contentStyle={{
+              background: "var(--dashboard-chart-tooltip)",
+              border: "1px solid var(--dashboard-chart-border)",
+              borderRadius: "14px",
+              color: "var(--dashboard-chart-text)",
+            }}
+            labelStyle={{
+              color: "var(--dashboard-chart-text)",
+              fontWeight: 700,
+            }}
           />
 
           <Area
@@ -92,7 +119,7 @@ function TrendChart({
 
 export function ChurnChart() {
   return (
-    <Card className="border-[#E7DED1]">
+    <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
           Churn Trend
@@ -105,12 +132,18 @@ export function ChurnChart() {
 
       <CardContent>
         <Tabs defaultValue="churn">
-          <TabsList className="mb-6">
-            <TabsTrigger value="churn">
+          <TabsList className="mb-6 rounded-xl bg-[#F3EEE6] dark:bg-[#2B241F]">
+            <TabsTrigger
+              value="churn"
+              className="dark:data-active:bg-[#251F1B] dark:data-active:text-white"
+            >
               Churn Rate
             </TabsTrigger>
 
-            <TabsTrigger value="retention">
+            <TabsTrigger
+              value="retention"
+              className="dark:data-active:bg-[#251F1B] dark:data-active:text-white"
+            >
               Retention
             </TabsTrigger>
           </TabsList>
@@ -118,8 +151,8 @@ export function ChurnChart() {
           <TabsContent value="churn">
             <TrendChart
               data={churnData}
-              color="#A53D13"
-              fill="#F4E4DC"
+              color="var(--dashboard-churn-line)"
+              fill="var(--dashboard-churn-fill)"
               domain={[0, 8]}
             />
           </TabsContent>
@@ -127,8 +160,8 @@ export function ChurnChart() {
           <TabsContent value="retention">
             <TrendChart
               data={retentionData}
-              color="#1E6B3B"
-              fill="#DFF0E6"
+              color="var(--dashboard-retention-line)"
+              fill="var(--dashboard-retention-fill)"
               domain={[80, 100]}
             />
           </TabsContent>

@@ -128,7 +128,7 @@ export function CustomerTable({
   });
 
   return (
-    <Card className="border-[#E7DED1]">
+    <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Customers ({filteredCustomers.length})</CardTitle>
       </CardHeader>
@@ -137,7 +137,7 @@ export function CustomerTable({
         <div className="w-full overflow-x-auto">
           <table className="w-full min-w-[1100px]">
             <thead>
-              <tr className="border-b border-[#D8CFC4] text-left text-muted-foreground">
+              <tr className="border-b border-[#D8CFC4] text-left text-muted-foreground dark:border-[#3A312A]">
                 <th className="px-4 pb-4 text-lg font-semibold">Customer ↑↓</th>
                 <th className="px-4 pb-4 text-lg font-semibold">Risk Tier ↑↓</th>
                 <th className="px-4 pb-4 text-lg font-semibold">Health ↑</th>
@@ -152,10 +152,10 @@ export function CustomerTable({
 
             <tbody>
               {filteredCustomers.map((customer) => (
-                <tr key={customer.name} className="border-b border-[#D8CFC4] transition-colors hover:bg-[#F8F5F0]">
+                <tr key={customer.name} className="border-b border-[#D8CFC4] transition-colors hover:bg-[#F8F5F0] dark:border-[#3A312A] dark:hover:bg-muted/40">
                   <td className="px-4 py-5">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border bg-[#F1ECE4] font-medium">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border bg-[#F1ECE4] font-medium dark:border-[#3A312A] dark:bg-muted">
                         {customer.initials}
                       </div>
 

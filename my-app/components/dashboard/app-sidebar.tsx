@@ -11,8 +11,8 @@ import {
   TrendingUp,
   Lightbulb,
   Settings,
-  CircleHelp,
   Sun,
+  Moon,
 } from "lucide-react";
 
 import {
@@ -27,9 +27,12 @@ import {
   SidebarGroupLabel,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { useTheme } from "@/components/Theme/theme-provider";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const isDarkTheme = theme === "dark";
 
   const mainItems = [
     {
@@ -64,7 +67,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className="border-r border-[#E7DED1] bg-[#F8F4EE]"
+      className="border-r border-[#E7DED1] bg-[#F8F4EE] dark:border-border dark:bg-sidebar"
     >
       <SidebarHeader>
         <div className="px-4 py-4">
@@ -92,8 +95,8 @@ export function AppSidebar() {
                   asChild
                   className={
                     pathname === item.url
-                      ? "bg-[#E8E4DD] font-medium"
-                      : "hover:bg-[#F1ECE4]"
+                      ? "bg-[#E8E4DD] font-medium dark:bg-sidebar-accent"
+                      : "hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
                   }
                 >
                   <Link href={item.url}>
@@ -119,8 +122,8 @@ export function AppSidebar() {
                   asChild
                   className={
                     pathname === item.url
-                      ? "bg-[#E8E4DD] font-medium"
-                      : "hover:bg-[#F1ECE4]"
+                      ? "bg-[#E8E4DD] font-medium dark:bg-sidebar-accent"
+                      : "hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
                   }
                 >
                   <Link href={item.url}>
@@ -141,31 +144,27 @@ export function AppSidebar() {
 
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton className="hover:bg-[#F1ECE4]">
-                <Sun />
+              <SidebarMenuButton
+                className="hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
+                onClick={() => setTheme(isDarkTheme ? "light" : "dark")}
+              >
+                {isDarkTheme ? <Moon /> : <Sun />}
                 <span>Theme</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton className="hover:bg-[#F1ECE4]">
-                <CircleHelp />
-                <span>Help</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-[#E7DED1]">
+      <SidebarFooter className="border-t border-[#E7DED1] dark:border-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
               className={
                 pathname === "/settings"
-                  ? "bg-[#E8E4DD] font-medium"
-                  : "hover:bg-[#F1ECE4]"
+                  ? "bg-[#E8E4DD] font-medium dark:bg-sidebar-accent"
+                  : "hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
               }
             >
               <Link href="/settings">

@@ -139,7 +139,7 @@ function HealthBar({
 
   return (
     <div className="flex items-center gap-3">
-      <div className="h-3 w-32 rounded-full bg-[#E7DED1]">
+      <div className="h-3 w-32 rounded-full bg-[#E7DED1] dark:bg-muted">
         <div
           className={`h-3 rounded-full ${color}`}
           style={{
@@ -182,7 +182,7 @@ export function CustomerOverview() {
     filteredCustomers.slice(start, end);
 
   return (
-    <Card className="border-[#E7DED1]">
+    <Card className="border-[#E7DED1] bg-white dark:border-border dark:bg-card">
       <CardHeader>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -250,11 +250,11 @@ export function CustomerOverview() {
               {pageCustomers.map((customer) => (
                 <tr
                   key={customer.name}
-                  className="border-b hover:bg-[#F8F5F0] transition-colors"
+                  className="border-b transition-colors hover:bg-[#F8F5F0] dark:border-border dark:hover:bg-muted/40"
                 >
                   <td className="py-6">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full border bg-[#F8F5F0] text-lg font-medium">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full border bg-[#F8F5F0] text-lg font-medium dark:border-border dark:bg-muted">
                         {customer.initials}
                       </div>
 

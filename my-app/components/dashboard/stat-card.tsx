@@ -37,6 +37,8 @@ function StatCard({
         border-[#E7DED1]
         bg-white
         shadow-none
+        dark:border-border
+        dark:bg-card
       "
     >
       <CardContent className="p-3">
@@ -53,6 +55,7 @@ function StatCard({
               items-center justify-center
               rounded-xl
               bg-[#F3EEE6]
+              dark:bg-muted
             "
           >
             {icon}
@@ -76,6 +79,8 @@ function StatCard({
               px-2.5 py-1
               text-sm font-medium
               text-green-700
+              dark:bg-green-950/40
+              dark:text-green-400
             "
           >
             <TrendIcon className="h-3.5 w-3.5" />

@@ -63,7 +63,7 @@ function StatusBadge({ status }: { status: Dataset["status"] }) {
 
 export function DatasetTable() {
   return (
-    <Card className="border-[#E7DED1]">
+    <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
           Uploaded Datasets
@@ -74,7 +74,7 @@ export function DatasetTable() {
         <div className="w-full overflow-x-auto">
           <table className="w-full min-w-225">
             <thead>
-              <tr className="border-b text-left text-muted-foreground">
+              <tr className="border-b text-left text-muted-foreground dark:border-[#3A312A]">
                 <th className="px-4 pb-4 text-lg font-semibold">Dataset</th>
                 <th className="px-4 pb-4 text-lg font-semibold">Rows</th>
                 <th className="px-4 pb-4 text-lg font-semibold">Columns</th>
@@ -89,11 +89,11 @@ export function DatasetTable() {
               {datasets.map((dataset) => (
                 <tr
                   key={dataset.name}
-                  className="border-b transition-colors hover:bg-[#F8F5F0]"
+                  className="border-b transition-colors hover:bg-[#F8F5F0] dark:border-[#3A312A] dark:hover:bg-muted/40"
                 >
                   <td className="px-4 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="rounded-xl bg-[#F1ECE4] p-3">
+                      <div className="rounded-xl bg-[#F1ECE4] p-3 dark:bg-muted">
                         <CheckCircle className="h-5 w-5 text-green-700" />
                       </div>
 

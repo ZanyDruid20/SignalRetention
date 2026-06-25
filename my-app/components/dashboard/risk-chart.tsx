@@ -47,15 +47,32 @@ function TrendChart({
     <div className="h-62.5">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="4 4" />
+          <CartesianGrid
+            stroke="var(--dashboard-chart-grid)"
+            strokeDasharray="4 4"
+          />
 
-          <XAxis dataKey="month" />
+          <XAxis
+            dataKey="month"
+            axisLine={false}
+            tickLine={false}
+            tick={{
+              fill: "var(--dashboard-chart-muted)",
+              fontSize: 14,
+            }}
+          />
 
           <YAxis
             domain={domain}
             tickFormatter={(value) =>
               `$${value / 1000}k`
             }
+            axisLine={false}
+            tickLine={false}
+            tick={{
+              fill: "var(--dashboard-chart-muted)",
+              fontSize: 14,
+            }}
           />
 
           <Tooltip
@@ -63,6 +80,19 @@ function TrendChart({
               `$${Number(value).toLocaleString()}`,
               "Revenue at Risk",
             ]}
+            contentStyle={{
+              background: "var(--dashboard-chart-tooltip)",
+              border: "1px solid var(--dashboard-chart-border)",
+              borderRadius: "14px",
+              color: "var(--dashboard-chart-text)",
+            }}
+            labelStyle={{
+              color: "var(--dashboard-chart-text)",
+              fontWeight: 700,
+            }}
+            itemStyle={{
+              color,
+            }}
           />
 
           <Line
@@ -83,7 +113,7 @@ function TrendChart({
 
 export function RevenueAtRiskChart() {
   return (
-    <Card className="border-[#E7DED1]">
+    <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
       <CardHeader className="pb-4">
         <CardTitle className="text-2xl font-bold">
           Revenue at Risk
@@ -97,7 +127,7 @@ export function RevenueAtRiskChart() {
       <CardContent>
         <TrendChart
           data={revenueAtRiskData}
-          color="#5B3A29"
+          color="var(--dashboard-risk-line)"
           domain={[0, 500000]}
         />
       </CardContent>

@@ -22,7 +22,7 @@ export function DataSetsUploader() {
         }, 1500);
     }
     return (
-        <Card className="border-[#E7DED1] bg-white">
+        <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
         <CardHeader>
             <CardTitle className="text-2xl font-bold">
             Add Your Dataset
@@ -33,7 +33,7 @@ export function DataSetsUploader() {
             </p>
         </CardHeader>
         <CardContent>
-        <label className="flex min-h-65 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#D8CFC4] bg-[#FCFAF7] p-8 text-center transition hover:bg-[#F8F4EE]">
+        <label className="flex min-h-65 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#D8CFC4] bg-[#FCFAF7] p-8 text-center transition hover:bg-[#F8F4EE] dark:border-[#3A312A] dark:bg-muted/30 dark:hover:bg-muted/50">
           {status === "idle" && (
             <>
               <Upload className="mb-4 h-10 w-10 text-muted-foreground" />

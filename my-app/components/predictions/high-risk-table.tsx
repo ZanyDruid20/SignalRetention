@@ -62,7 +62,7 @@ function RiskBadge({ risk }: { risk: RiskTier }) {
 
 export function HighRiskCustomersTable() {
   return (
-    <Card className="border-[#E7DED1]">
+    <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
       <CardHeader>
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-[#A53D13]" />
@@ -81,7 +81,7 @@ export function HighRiskCustomersTable() {
         <div className="w-full overflow-x-auto">
           <table className="w-full min-w-225">
             <thead>
-              <tr className="border-b text-left text-muted-foreground">
+              <tr className="border-b text-left text-muted-foreground dark:border-[#3A312A]">
                 <th className="px-4 pb-4 text-lg font-semibold">Customer</th>
                 <th className="px-4 pb-4 text-lg font-semibold">Company</th>
                 <th className="px-4 pb-4 text-lg font-semibold">Risk Tier</th>
@@ -99,7 +99,7 @@ export function HighRiskCustomersTable() {
               {highRiskCustomers.map((customer) => (
                 <tr
                   key={customer.name}
-                  className="border-b transition-colors hover:bg-[#F8F5F0]"
+                  className="border-b transition-colors hover:bg-[#F8F5F0] dark:border-[#3A312A] dark:hover:bg-muted/40"
                 >
                   <td className="px-4 py-5 font-semibold">{customer.name}</td>
 
@@ -118,7 +118,7 @@ export function HighRiskCustomersTable() {
                   <td className="px-4 py-5 font-semibold">{customer.mrr}</td>
 
                   <td className="px-4 py-5">
-                    <span className="rounded-full bg-[#F1ECE4] px-4 py-1 text-sm font-medium text-[#5A3B26]">
+                    <span className="rounded-full bg-[#F1ECE4] px-4 py-1 text-sm font-medium text-[#5A3B26] dark:bg-muted dark:text-foreground">
                       {customer.recommendedAction}
                     </span>
                   </td>

@@ -18,7 +18,7 @@ export default function DashboardPage() {
       <AppSidebar />
 
       <SidebarInset>
-        <div className="bg-[#FCFAF7] p-8">
+        <div className="min-h-screen bg-[#FCFAF7] p-8 dark:bg-background">
           <DashboardHeader />
 
           {/* KPI Cards */}
