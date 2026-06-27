@@ -1,0 +1,9 @@
+ml-service/.venv/
+ml-service/data/
+ml-service/models/
+ml-service/reports/
+my-app/.env.local
+.env
+.env.*
+__pycache__/
+*.pyc
