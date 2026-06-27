@@ -94,26 +94,31 @@ const notificationOptions: {
 
 function PreferenceToggle({
   checked,
+  label,
   onCheckedChange,
 }: {
   checked: boolean;
+  label: string;
   onCheckedChange: (checked: boolean) => void;
 }) {
   return (
-    <button
-      type="button"
-      aria-pressed={checked}
-      onClick={() => onCheckedChange(!checked)}
-      className={`flex h-7 w-12 shrink-0 items-center rounded-full p-1 transition ${
-        checked ? "bg-[#5A3B26]" : "bg-[#E7DED1]"
-      }`}
-    >
-      <span
-        className={`size-5 rounded-full bg-white shadow-sm transition ${
-          checked ? "translate-x-5" : "translate-x-0"
-        }`}
+    <label className="relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center">
+      <span className="sr-only">{label}</span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onCheckedChange(event.target.checked)}
+        className="peer sr-only"
       />
-    </button>
+      <span
+        className="h-7 w-12 rounded-full bg-[#E7DED1] transition peer-checked:bg-[#5A3B26]"
+        aria-hidden="true"
+      />
+      <span
+        className="absolute left-1 size-5 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5"
+        aria-hidden="true"
+      />
+    </label>
   );
 }
 
@@ -293,6 +298,7 @@ export default function SettingsPage() {
                   </div>
                   <PreferenceToggle
                     checked={notifications[option.key]}
+                    label={option.label}
                     onCheckedChange={(checked) =>
                       updateNotification(option.key, checked)
                     }
