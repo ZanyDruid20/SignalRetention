@@ -10,16 +10,63 @@ def load_raw_data(path: Path = RAW_DATA_PATH) -> pd.DataFrame:
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    # remove duplicate rows
+
+    # Remove duplicate rows
     df = df.drop_duplicates()
-    # convert to numeric
-    df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
-    # Fill missing TotalCharges with median
-    df["TotalCharges"] = df["TotalCharges"].fillna(df["TotalCharges"].median())
-    # Drop customerID because it is just an identifier, not a useful feature
+
+    # Convert TotalCharges to numeric
+    df["TotalCharges"] = pd.to_numeric(
+        df["TotalCharges"],
+        errors="coerce"
+    )
+
+    # Fill missing TotalCharges with the median
+    df["TotalCharges"] = df["TotalCharges"].fillna(
+        df["TotalCharges"].median()
+    )
+
+    # ==========================
+    # Feature Engineering
+    # ==========================
+
+    # Average amount spent per month
+    df["AvgChargesPerTenure"] = (
+        df["TotalCharges"] / (df["tenure"] + 1)
+    )
+
+    # Is customer on a month-to-month contract?
+    df["IsMonthToMonth"] = (
+        df["Contract"] == "Month-to-month"
+    ).astype(int)
+
+    # Does customer have fiber optic internet?
+    df["HasFiberOptic"] = (
+        df["InternetService"] == "Fiber optic"
+    ).astype(int)
+
+    # Does customer have tech support?
+    df["HasTechSupport"] = (
+        df["TechSupport"] == "Yes"
+    ).astype(int)
+
+    # Does customer have online security?
+    df["HasOnlineSecurity"] = (
+        df["OnlineSecurity"] == "Yes"
+    ).astype(int)
+
+    # ==========================
+    # Continue preprocessing
+    # ==========================
+
+    # Remove identifier
     df = df.drop(columns=["customerID"])
-    # Convert target column to numbers
-    df["Churn"] = df["Churn"].map({"No": 0, "Yes": 1})
+
+    # Convert target labels
+    df["Churn"] = df["Churn"].map({
+        "No": 0,
+        "Yes": 1
+    })
+
     return df
 
 def split_features_target(df: pd.DataFrame):

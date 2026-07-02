@@ -1,29 +1,33 @@
+from pathlib import Path
 import pandas as pd
 
-df = pd.read_csv("data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv")
+RAW_DATA_PATH = Path("data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv")
 
-df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
 
-# Remove rows where TotalCharges could not be converted.
-df = df.dropna(subset=["TotalCharges"])
+def load_raw_data(path: Path = RAW_DATA_PATH) -> pd.DataFrame:
+    return pd.read_csv(path)
 
-print("Shape:")
-print(df.shape)
 
-print("\nColumns:")
-print(df.columns)
+if __name__ == "__main__":
+    df = load_raw_data()
 
-print("\nFirst 5 Rows:")
-print(df.head())
+    print("Shape:")
+    print(df.shape)
 
-print("\nDataset Info:")
-df.info()
+    print("\nColumns:")
+    print(df.columns)
 
-print("\nSummary Statistics:")
-print(df.describe())
+    print("\nFirst 5 Rows:")
+    print(df.head())
 
-print("\nMissing Values:")
-print(df.isnull().sum())
+    print("\nDataset Info:")
+    df.info()
 
-print("\nChurn Distribution:")
-print(df["Churn"].value_counts())
+    print("\nSummary Statistics:")
+    print(df.describe())
+
+    print("\nMissing Values:")
+    print(df.isnull().sum())
+
+    print("\nChurn Distribution:")
+    print(df["Churn"].value_counts())
