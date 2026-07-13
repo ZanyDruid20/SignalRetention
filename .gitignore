@@ -8,3 +8,4 @@ my-app/.env.local
 __pycache__/
 *.pyc
 backend/.env
+backend/.env.example
