@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     redis_url: str | None = None
     gcs_bucket_name: str | None = None
+    ml_service_url: str = "http://localhost:8001"
     frontend_url: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(

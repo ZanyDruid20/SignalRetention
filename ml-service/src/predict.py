@@ -2,8 +2,12 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-from config import CHURN_THRESHOLD
-from preprocessing import preprocess_data
+try:
+    from .config import CHURN_THRESHOLD
+    from .preprocessing import preprocess_data
+except ImportError:
+    from config import CHURN_THRESHOLD
+    from preprocessing import preprocess_data
 
 MODEL_PATH = Path("models/churn_model.pkl")
 
