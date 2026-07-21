@@ -1,5 +1,14 @@
 from fastapi import APIRouter
-from app.api.routes import auth, customers, datasets, health
+from app.api.routes import (
+    auth,
+    customers,
+    dashboard,
+    datasets,
+    health,
+    predictions,
+    recommendations,
+    simulations,
+)
 
 
 
@@ -26,4 +35,28 @@ api_router.include_router(
     customers.router,
     prefix="/customers",
     tags=["customers"],
+)
+
+api_router.include_router(
+    predictions.router,
+    prefix="/predictions",
+    tags=["predictions"],
+)
+
+api_router.include_router(
+    recommendations.router,
+    prefix="/recommendations",
+    tags=["recommendations"],
+)
+
+api_router.include_router(
+    dashboard.router,
+    prefix="/dashboard",
+    tags=["dashboard"],
+)
+
+api_router.include_router(
+    simulations.router,
+    prefix="/simulations",
+    tags=["simulations"],
 )
