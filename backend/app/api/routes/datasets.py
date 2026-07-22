@@ -3,8 +3,10 @@ import uuid
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.rate_limit import rate_limit
 from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
+from app.models.dataset import Dataset
 from app.models.user import User
 from app.schemas.dataset import DatasetRead
 from app.services.dataset_service import (
@@ -13,10 +15,16 @@ from app.services.dataset_service import (
     update_user_dataset_status,
 )
 from app.services.upload_service import process_dataset_upload
-from app.models.dataset import Dataset
 
 router = APIRouter()
-@router.post("/upload", response_model=DatasetRead, status_code=status.HTTP_201_CREATED)
+
+
+@router.post(
+    "/upload",
+    response_model=DatasetRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("dataset_upload", 5, 600))],
+)
 async def upload_dataset(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),

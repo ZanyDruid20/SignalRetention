@@ -1,11 +1,4 @@
-import redis.asyncio as redis
-from app.core.config import settings
-
-redis_client = (
-    redis.from_url(settings.redis_url, decode_responses=True)
-    if settings.redis_url
-    else None
-)
+from app.db.redis import redis_client
 
 async def get_cache(key: str) -> str | None:
     if not key:

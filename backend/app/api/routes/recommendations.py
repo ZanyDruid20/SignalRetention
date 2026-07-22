@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.rate_limit import rate_limit
 from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
 from app.models.recommendation import Recommendation
@@ -57,7 +58,12 @@ async def get_recommendation(
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
 
-@router.post("", response_model=RecommendationRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=RecommendationRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("recommendation_create", 20, 60))],
+)
 async def create_recommendation(
     recommendation_data: RecommendationCreate,
     db: AsyncSession = Depends(get_db),
@@ -70,7 +76,12 @@ async def create_recommendation(
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
     
-@router.post("/customer/{customer_id}/risk-tier", response_model=RecommendationRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/customer/{customer_id}/risk-tier",
+    response_model=RecommendationRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("recommendation_generate", 20, 60))],
+)
 async def create_recommendation_from_risk(
     customer_id: uuid.UUID,
     risk_tier: str,

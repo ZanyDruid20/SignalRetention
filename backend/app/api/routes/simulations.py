@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.rate_limit import rate_limit
 from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
 from app.models.simulation import Simulation
@@ -40,7 +41,12 @@ async def get_simulation(
         raise HTTPException(status_code=403, detail=str(exc))
 
 
-@router.post("", response_model=SimulationRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=SimulationRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("simulation_create", 20, 60))],
+)
 async def create_simulation(
     simulation_data: SimulationCreate,
     db: AsyncSession = Depends(get_db),

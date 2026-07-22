@@ -4,6 +4,7 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.rate_limit import rate_limit
 from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
 from app.models.prediction import Prediction
@@ -57,7 +58,12 @@ async def get_prediction(
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
 
-@router.post("/customer/{customer_id}", response_model=PredictionRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/customer/{customer_id}",
+    response_model=PredictionRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("prediction_create", 20, 60))],
+)
 async def create_customer_prediction(
     customer_id: uuid.UUID,
     churn_probability: Decimal,
