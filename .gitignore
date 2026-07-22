@@ -9,3 +9,5 @@ __pycache__/
 *.pyc
 backend/.env
 backend/.env.example
+secrets/*
+ml-service/.env.example

@@ -24,6 +24,14 @@ def load_model_from_gcs(bucket_name: str, model_blob_name: str):
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(model_blob_name)
 
-    with NamedTemporaryFile(suffix=".pkl") as model_file:
-        blob.download_to_filename(model_file.name)
-        return joblib.load(model_file.name)
+    temp_path: Path | None = None
+
+    try:
+        with NamedTemporaryFile(suffix=".pkl", delete=False) as model_file:
+            temp_path = Path(model_file.name)
+
+        blob.download_to_filename(str(temp_path))
+        return joblib.load(temp_path)
+    finally:
+        if temp_path and temp_path.exists():
+            temp_path.unlink()
