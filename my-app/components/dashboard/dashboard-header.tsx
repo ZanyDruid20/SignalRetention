@@ -2,9 +2,13 @@
 
 import { UserButton } from "@clerk/nextjs";
 import { RefreshCw, Bell } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { useAuthUser } from "@/hooks/use-auth-user";
 
 export function DashboardHeader() {
+    const { user, isLoading, error } = useAuthUser();
+
     return (
         <div className="flex items-center justify-between border-b border-[rgb(231,222,209)] pb-6 dark:border-border">
             {/* Left side */}
@@ -13,7 +17,11 @@ export function DashboardHeader() {
                     Dashboard Overview
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                    Monitor and analyze customer retention metrics
+                    {isLoading
+                        ? "Loading account..."
+                        : error
+                          ? "Unable to verify backend account"
+                          : `Monitor and analyze customer retention metrics for ${user?.name ?? "your account"}`}
                 </p>
             </div>
             {/* Right side */}

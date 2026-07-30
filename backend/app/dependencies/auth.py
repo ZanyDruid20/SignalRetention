@@ -1,3 +1,5 @@
+import logging
+
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -10,6 +12,7 @@ from app.services.user_service import get_or_create_user_from_auth
 
 
 security = HTTPBearer()
+logger = logging.getLogger(__name__)
 
 
 async def get_current_user(
@@ -28,7 +31,12 @@ async def get_current_user(
     try:
         auth_user = verify_clerk_token(token)
         return await get_or_create_user_from_auth(db, auth_user)
-    except (jwt.PyJWTError, ValueError):
+    except (jwt.PyJWTError, ValueError) as exc:
+        logger.warning(
+            "auth_failed exception_type=%s message=%s",
+            type(exc).__name__,
+            exc,
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
