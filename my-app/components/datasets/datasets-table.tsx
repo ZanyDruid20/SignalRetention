@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
+import type { DatasetRead } from "@/types/api";
 
 type Dataset = {
   name: string;
@@ -18,7 +19,7 @@ type Dataset = {
   quality: string;
 };
 
-const datasets: Dataset[] = [
+const fallbackDatasets: Dataset[] = [
   {
     name: "customer_churn_data.csv",
     rows: "12,547",
@@ -45,6 +46,22 @@ const datasets: Dataset[] = [
   },
 ];
 
+function mapDataset(dataset: DatasetRead): Dataset {
+  return {
+    name: dataset.filename,
+    rows: dataset.record_count.toLocaleString(),
+    columns: 21,
+    status:
+      dataset.upload_status === "completed"
+        ? "Processed"
+        : dataset.upload_status === "failed"
+          ? "Failed"
+          : "Processing",
+    uploadedAt: new Date(dataset.created_at).toLocaleDateString(),
+    quality: "Pending",
+  };
+}
+
 function StatusBadge({ status }: { status: Dataset["status"] }) {
   const styles = {
     Processed: "bg-green-50 text-green-700 border-green-200",
@@ -61,7 +78,16 @@ function StatusBadge({ status }: { status: Dataset["status"] }) {
   );
 }
 
-export function DatasetTable() {
+type DatasetTableProps = {
+  uploadedDatasets?: DatasetRead[];
+};
+
+export function DatasetTable({ uploadedDatasets = [] }: DatasetTableProps) {
+  const datasets =
+    uploadedDatasets.length > 0
+      ? uploadedDatasets.map(mapDataset)
+      : fallbackDatasets;
+
   return (
     <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
       <CardHeader>

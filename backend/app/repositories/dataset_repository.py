@@ -51,3 +51,23 @@ async def update_dataset_status(
     await db.refresh(dataset)
 
     return dataset
+
+
+async def update_dataset_upload_metadata(
+    db: AsyncSession,
+    dataset_id: uuid.UUID,
+    upload_status: str,
+    record_count: int,
+) -> Dataset | None:
+    dataset = await get_dataset_by_id(db, dataset_id)
+
+    if dataset is None:
+        return None
+
+    dataset.upload_status = upload_status
+    dataset.record_count = record_count
+
+    await db.commit()
+    await db.refresh(dataset)
+
+    return dataset

@@ -6,9 +6,17 @@ import { DatasetsHeader } from "@/components/datasets/datasets-header";
 import { DatasetsStats } from "@/components/datasets/datasets-stats";
 import { DataSetsUploader } from "@/components/datasets/datasets-uploader";
 import { DatasetTable } from "@/components/datasets/datasets-table";
+import { useDatasetUpload } from "@/hooks/use-datasets";
+import type { DatasetRead } from "@/types/api";
 
 export default function DatasetsPage() {
   const [search, setSearch] = useState("");
+  const [uploadedDatasets, setUploadedDatasets] = useState<DatasetRead[]>([]);
+  const { error, status, uploadFile } = useDatasetUpload();
+
+  function handleUploadComplete(dataset: DatasetRead) {
+    setUploadedDatasets((currentDatasets) => [dataset, ...currentDatasets]);
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F1EA] dark:bg-background">
@@ -23,8 +31,13 @@ export default function DatasetsPage() {
           pendingDatasets={4}
         />
 
-        <DataSetsUploader />
-        <DatasetTable />
+        <DataSetsUploader
+          error={error}
+          status={status}
+          onUploadFile={uploadFile}
+          onUploadComplete={handleUploadComplete}
+        />
+        <DatasetTable uploadedDatasets={uploadedDatasets} />
 
       </main>
     </div>

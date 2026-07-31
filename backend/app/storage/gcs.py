@@ -4,6 +4,11 @@ from app.core.config import settings
 
 
 def get_gcs_client() -> storage.Client:
+    if settings.google_application_credentials:
+        return storage.Client.from_service_account_json(
+            settings.google_application_credentials
+        )
+
     return storage.Client()
 
 

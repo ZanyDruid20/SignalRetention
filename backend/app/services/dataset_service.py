@@ -8,6 +8,7 @@ from app.repositories.dataset_repository import (
     create_dataset,
     get_dataset_by_id,
     list_datasets_by_user_id,
+    update_dataset_upload_metadata,
     update_dataset_status,
 )
 from app.schemas.dataset import DatasetCreate
@@ -57,6 +58,27 @@ async def update_user_dataset_status(
         db,
         dataset_id,
         upload_status,
+    )
+
+    if updated_dataset is None:
+        raise ValueError("Dataset not found")
+
+    return updated_dataset
+
+
+async def complete_user_dataset_upload(
+    db: AsyncSession,
+    current_user: User,
+    dataset_id: uuid.UUID,
+    record_count: int,
+) -> Dataset:
+    await get_user_dataset(db, current_user, dataset_id)
+
+    updated_dataset = await update_dataset_upload_metadata(
+        db=db,
+        dataset_id=dataset_id,
+        upload_status="completed",
+        record_count=record_count,
     )
 
     if updated_dataset is None:

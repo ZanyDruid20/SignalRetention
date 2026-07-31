@@ -14,13 +14,31 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     # Remove duplicate rows
     df = df.drop_duplicates()
 
-    # Convert TotalCharges to numeric
+    # Convert numeric columns that may arrive as strings during inference.
+    df["tenure"] = pd.to_numeric(
+        df["tenure"],
+        errors="coerce"
+    )
+
+    df["MonthlyCharges"] = pd.to_numeric(
+        df["MonthlyCharges"],
+        errors="coerce"
+    )
+
     df["TotalCharges"] = pd.to_numeric(
         df["TotalCharges"],
         errors="coerce"
     )
 
-    # Fill missing TotalCharges with the median
+    # Fill missing numeric values with medians
+    df["tenure"] = df["tenure"].fillna(
+        df["tenure"].median()
+    )
+
+    df["MonthlyCharges"] = df["MonthlyCharges"].fillna(
+        df["MonthlyCharges"].median()
+    )
+
     df["TotalCharges"] = df["TotalCharges"].fillna(
         df["TotalCharges"].median()
     )

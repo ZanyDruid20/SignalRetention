@@ -27,6 +27,22 @@ def _prepare_customer_frame(customer: dict) -> pd.DataFrame:
     return X.reindex(columns=feature_names, fill_value=0)
 
 
+def _prepare_customers_frame(customers: list[dict]) -> pd.DataFrame:
+    df = pd.DataFrame(customers)
+
+    if "Churn" not in df.columns:
+        df["Churn"] = "No"
+
+    cleaned = clean_data(df)
+    X = cleaned.drop(columns=["Churn"])
+    X = encode_features(X)
+
+    model = get_model()
+    feature_names = list(getattr(model, "feature_names_in_", X.columns))
+
+    return X.reindex(columns=feature_names, fill_value=0)
+
+
 def predict_customer(customer: dict) -> dict:
     model = get_model()
     X = _prepare_customer_frame(customer)
@@ -36,4 +52,11 @@ def predict_customer(customer: dict) -> dict:
 
 
 def predict_customers(customers: list[dict]) -> list[dict]:
-    return [predict_customer(customer) for customer in customers]
+    model = get_model()
+    X = _prepare_customers_frame(customers)
+    probabilities = model.predict_proba(X)[:, 1]
+
+    return [
+        {"churn_probability": float(probability)}
+        for probability in probabilities
+    ]
