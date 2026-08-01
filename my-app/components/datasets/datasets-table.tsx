@@ -11,46 +11,18 @@ import { Button } from "@/components/ui/button";
 import type { DatasetRead } from "@/types/api";
 
 type Dataset = {
+  id: string;
   name: string;
   rows: string;
-  columns: number;
   status: "Processed" | "Processing" | "Failed";
   uploadedAt: string;
-  quality: string;
 };
-
-const fallbackDatasets: Dataset[] = [
-  {
-    name: "customer_churn_data.csv",
-    rows: "12,547",
-    columns: 18,
-    status: "Processed",
-    uploadedAt: "Today",
-    quality: "94%",
-  },
-  {
-    name: "subscription_activity.csv",
-    rows: "8,921",
-    columns: 14,
-    status: "Processed",
-    uploadedAt: "Yesterday",
-    quality: "91%",
-  },
-  {
-    name: "support_tickets.csv",
-    rows: "3,402",
-    columns: 9,
-    status: "Processed",
-    uploadedAt: "3 days ago",
-    quality: "88%",
-  },
-];
 
 function mapDataset(dataset: DatasetRead): Dataset {
   return {
+    id: dataset.id,
     name: dataset.filename,
     rows: dataset.record_count.toLocaleString(),
-    columns: 21,
     status:
       dataset.upload_status === "completed"
         ? "Processed"
@@ -58,7 +30,6 @@ function mapDataset(dataset: DatasetRead): Dataset {
           ? "Failed"
           : "Processing",
     uploadedAt: new Date(dataset.created_at).toLocaleDateString(),
-    quality: "Pending",
   };
 }
 
@@ -80,13 +51,16 @@ function StatusBadge({ status }: { status: Dataset["status"] }) {
 
 type DatasetTableProps = {
   uploadedDatasets?: DatasetRead[];
+  isLoading?: boolean;
+  error?: string | null;
 };
 
-export function DatasetTable({ uploadedDatasets = [] }: DatasetTableProps) {
-  const datasets =
-    uploadedDatasets.length > 0
-      ? uploadedDatasets.map(mapDataset)
-      : fallbackDatasets;
+export function DatasetTable({
+  uploadedDatasets = [],
+  isLoading = false,
+  error = null,
+}: DatasetTableProps) {
+  const datasets = uploadedDatasets.map(mapDataset);
 
   return (
     <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
@@ -103,8 +77,6 @@ export function DatasetTable({ uploadedDatasets = [] }: DatasetTableProps) {
               <tr className="border-b text-left text-muted-foreground dark:border-[#3A312A]">
                 <th className="px-4 pb-4 text-lg font-semibold">Dataset</th>
                 <th className="px-4 pb-4 text-lg font-semibold">Rows</th>
-                <th className="px-4 pb-4 text-lg font-semibold">Columns</th>
-                <th className="px-4 pb-4 text-lg font-semibold">Quality</th>
                 <th className="px-4 pb-4 text-lg font-semibold">Status</th>
                 <th className="px-4 pb-4 text-lg font-semibold">Uploaded</th>
                 <th className="px-4 pb-4" />
@@ -112,9 +84,31 @@ export function DatasetTable({ uploadedDatasets = [] }: DatasetTableProps) {
             </thead>
 
             <tbody>
-              {datasets.map((dataset) => (
+              {isLoading && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-10 text-center text-muted-foreground"
+                  >
+                    Loading datasets...
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading && error && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-10 text-center text-red-700"
+                  >
+                    {error}
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading && !error && datasets.map((dataset) => (
                 <tr
-                  key={dataset.name}
+                  key={dataset.id}
                   className="border-b transition-colors hover:bg-[#F8F5F0] dark:border-[#3A312A] dark:hover:bg-muted/40"
                 >
                   <td className="px-4 py-5">
@@ -133,13 +127,6 @@ export function DatasetTable({ uploadedDatasets = [] }: DatasetTableProps) {
                   </td>
 
                   <td className="px-4 py-5 font-semibold">{dataset.rows}</td>
-
-                  <td className="px-4 py-5 font-semibold">{dataset.columns}</td>
-
-                  <td className="px-4 py-5 font-semibold">
-                    {dataset.quality}
-                  </td>
-
                   <td className="px-4 py-5">
                     <StatusBadge status={dataset.status} />
                   </td>
@@ -150,17 +137,38 @@ export function DatasetTable({ uploadedDatasets = [] }: DatasetTableProps) {
 
                   <td className="px-4 py-5">
                     <div className="flex gap-2">
-                      <Button variant="outline" size="icon">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        disabled
+                        title="View coming soon"
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
 
-                      <Button variant="outline" size="icon">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        disabled
+                        title="Delete coming soon"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </td>
                 </tr>
               ))}
+
+              {!isLoading && !error && datasets.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-10 text-center text-muted-foreground"
+                  >
+                    No datasets uploaded yet.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
