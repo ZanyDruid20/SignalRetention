@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
 
 import {
   LayoutDashboard,
@@ -28,6 +27,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useTheme } from "@/components/Theme/theme-provider";
+import { UserButton } from "@/components/auth/user-button";
 
 export function AppSidebar() {
   const pathname = usePathname();

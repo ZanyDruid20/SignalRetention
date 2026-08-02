@@ -1,8 +1,8 @@
 "use client";
 
-import { UserButton } from "@clerk/nextjs";
 import { RefreshCw, Bell } from "lucide-react";
 
+import { UserButton } from "@/components/auth/user-button";
 import { Button } from "@/components/ui/button";
 import { useAuthUser } from "@/hooks/use-auth-user";
 
