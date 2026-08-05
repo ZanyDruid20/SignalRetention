@@ -3,6 +3,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
+import type { RiskTier } from "@/types/api";
 
 import {
   Select,
@@ -13,8 +14,8 @@ import {
 } from "@/components/ui/select";
 
 type CustomerFiltersProps = {
-  riskTiers: string[];
-  onRiskTiersChange: (riskTiers: string[]) => void;
+  riskTiers: RiskTier[];
+  onRiskTiersChange: (riskTiers: RiskTier[]) => void;
   contract: string;
   onContractChange: (contract: string) => void;
   revenueRange: string;
@@ -24,7 +25,12 @@ type CustomerFiltersProps = {
   onClearFilters: () => void;
 };
 
-const riskOptions = ["Critical", "High Risk", "Moderate", "Low"];
+const riskOptions: { value: RiskTier; label: string }[] = [
+  { value: "Critical", label: "Critical" },
+  { value: "High", label: "High Risk" },
+  { value: "Medium", label: "Moderate" },
+  { value: "Low", label: "Low" },
+];
 
 export function CustomerFilters({
   riskTiers,
@@ -37,7 +43,7 @@ export function CustomerFilters({
   onHealthScoreChange,
   onClearFilters,
 }: CustomerFiltersProps) {
-  function toggleRisk(risk: string, checked: boolean) {
+  function toggleRisk(risk: RiskTier, checked: boolean) {
     if (checked) {
       onRiskTiersChange([...riskTiers, risk]);
       return;
@@ -61,12 +67,14 @@ export function CustomerFilters({
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {riskOptions.map((risk) => (
-              <label key={risk} className="flex items-center gap-3">
+              <label key={risk.value} className="flex items-center gap-3">
                 <Checkbox
-                  checked={riskTiers.includes(risk)}
-                  onCheckedChange={(checked) => toggleRisk(risk, checked === true)}
+                  checked={riskTiers.includes(risk.value)}
+                  onCheckedChange={(checked) =>
+                    toggleRisk(risk.value, checked === true)
+                  }
                 />
-                <span className="text-lg">{risk}</span>
+                <span className="text-lg">{risk.label}</span>
               </label>
             ))}
           </div>
@@ -85,9 +93,9 @@ export function CustomerFilters({
 
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="annual">Annual</SelectItem>
-                <SelectItem value="enterprise">Enterprise</SelectItem>
+                <SelectItem value="month-to-month">Month-to-month</SelectItem>
+                <SelectItem value="one year">One year</SelectItem>
+                <SelectItem value="two year">Two year</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -104,9 +112,9 @@ export function CustomerFilters({
 
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                <SelectItem value="low">$0 - $10k</SelectItem>
-                <SelectItem value="medium">$10k - $25k</SelectItem>
-                <SelectItem value="high">$25k+</SelectItem>
+                <SelectItem value="low">$0 - $50</SelectItem>
+                <SelectItem value="medium">$50 - $90</SelectItem>
+                <SelectItem value="high">$90+</SelectItem>
               </SelectContent>
             </Select>
           </div>

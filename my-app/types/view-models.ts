@@ -5,13 +5,20 @@ export type CustomerStatus = "Active" | "Inactive" | "Unknown";
 export type CustomerExplorerRow = {
   id: string;
   customerName: string;
-  riskTier: RiskTier;
+  riskTier: RiskTier | null;
   healthScore: number | null;
   churnProbability: number | null;
   monthlyRevenue: number | null;
   contractType: string | null;
   status: CustomerStatus;
   lastActivity: string | null;
+};
+
+export type CustomerExplorerSummaryView = {
+  totalCustomers: number;
+  highRiskCustomers: number;
+  monthlyRevenueAtRisk: number;
+  averageHealthScore: number | null;
 };
 
 export type RecommendationView = {

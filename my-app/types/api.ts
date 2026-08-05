@@ -33,6 +33,33 @@ export type CustomerRead = {
     created_at: string;
 }
 
+export type CustomerExplorerItem = {
+    id: string;
+    customer_identifier: string;
+    monthly_revenue: string | null;
+    contract_type: string | null;
+    actual_churn: boolean | null;
+    risk_tier: RiskTier | null;
+    health_score: number | null;
+    churn_probability: string | null;
+}
+
+export type CustomerExplorerSummary = {
+    total_customers: number;
+    high_risk_customers: number;
+    monthly_revenue_at_risk: string;
+    average_health_score: string | null;
+}
+
+export type CustomerExplorerPage = {
+    items: CustomerExplorerItem[];
+    summary: CustomerExplorerSummary;
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+}
+
 export type PredictionRead = {
     id: string;
     customer_id: string;
