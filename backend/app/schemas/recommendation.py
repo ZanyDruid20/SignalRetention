@@ -1,13 +1,16 @@
 import uuid
 from datetime import datetime
+from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+RecommendationPriority = Literal["low", "medium", "high", "urgent"]
 
 
 class RecommendationBase(BaseModel):
-    action: str
-    priority: str
-    expected_impact: str | None = None
+    action: str = Field(min_length=1, max_length=500)
+    priority: RecommendationPriority
+    expected_impact: str | None = Field(default=None, max_length=500)
 
 
 class RecommendationCreate(RecommendationBase):

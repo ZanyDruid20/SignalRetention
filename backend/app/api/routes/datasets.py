@@ -12,9 +12,9 @@ from app.schemas.dataset import DatasetRead
 from app.services.dataset_service import (
     get_user_dataset,
     list_datasets_for_user,
-    update_user_dataset_status,
 )
 from app.services.upload_service import process_dataset_upload
+from app.services.validation_service import MAX_UPLOAD_SIZE_MB
 
 router = APIRouter()
 
@@ -30,13 +30,20 @@ async def upload_dataset(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> Dataset:
-    file_bytes = await file.read()
+    max_size_bytes = MAX_UPLOAD_SIZE_MB * 1024 * 1024
+    content_type = file.content_type
+    try:
+        file_bytes = await file.read(max_size_bytes + 1)
+    finally:
+        await file.close()
+
     try:
         return await process_dataset_upload(
             db=db,
             current_user=current_user,
             filename=file.filename or "upload.csv",
             file_bytes=file_bytes,
+            content_type=content_type,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -56,19 +63,6 @@ async def get_dataset(
 ) -> Dataset:
     try:
         return await get_user_dataset(db, current_user, dataset_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
-    except PermissionError as exc:
-        raise HTTPException(status_code=403, detail=str(exc))
-@router.patch("/{dataset_id}/status", response_model=DatasetRead)
-async def update_dataset_status_route(
-    dataset_id: uuid.UUID,
-    upload_status: str,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> Dataset:
-    try:
-        return await update_user_dataset_status(db=db, current_user=current_user, dataset_id=dataset_id, upload_status=upload_status)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except PermissionError as exc:

@@ -1,14 +1,14 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 class UserBase(BaseModel):
     email: EmailStr
-    name: str
+    name: str = Field(min_length=1, max_length=255)
 
 class UserCreate(UserBase):
-    clerk_user_id: str
+    clerk_user_id: str = Field(min_length=1, max_length=255)
 
 class UserRead(UserBase):
     id: uuid.UUID

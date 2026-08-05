@@ -17,7 +17,11 @@ from app.services.customer_service import create_customers_for_dataset_bulk
 from app.services.ml_service import build_prediction, build_recommendation, predict_dataset
 from app.services.recommendation_service import create_recommendations_for_customers_bulk
 from app.services.storage_service import upload_dataset_file
-from app.services.validation_service import validate_upload_file
+from app.services.validation_service import (
+    MAX_UPLOAD_ROWS,
+    REQUIRED_CSV_COLUMNS,
+    validate_upload_file,
+)
 from app.schemas.customer import CustomerCreate
 
 async def process_dataset_upload(
@@ -25,8 +29,11 @@ async def process_dataset_upload(
     current_user: User,
     filename: str,
     file_bytes: bytes,
+    content_type: str | None = None,
 ) -> Dataset:
-    validate_upload_file(filename, file_bytes)
+    filename = validate_upload_file(filename, file_bytes, content_type=content_type)
+    raw_rows = parse_csv_rows(file_bytes)
+    validate_csv_rows(raw_rows)
 
     dataset = await create_dataset_for_user(
         db=db,
@@ -50,7 +57,6 @@ async def process_dataset_upload(
             file_bytes=file_bytes,
         )
 
-        raw_rows = parse_csv_rows(file_bytes)
         customers_data = build_customer_create_rows(dataset.id, raw_rows)
 
         customers = await create_customers_for_dataset_bulk(
@@ -103,14 +109,48 @@ async def process_dataset_upload(
 
 
 def parse_csv_rows(file_bytes: bytes) -> list[dict[str, Any]]:
-    text = file_bytes.decode("utf-8-sig")
-    reader = csv.DictReader(StringIO(text))
+    try:
+        text = file_bytes.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise ValueError("CSV file must use UTF-8 encoding") from exc
 
-    rows = [dict(row) for row in reader]
+    try:
+        reader = csv.DictReader(StringIO(text))
+        fieldnames = set(reader.fieldnames or [])
+        missing_columns = REQUIRED_CSV_COLUMNS - fieldnames
+        if missing_columns:
+            missing = ", ".join(sorted(missing_columns))
+            raise ValueError(f"CSV file is missing required columns: {missing}")
+
+        rows = [dict(row) for row in reader]
+    except csv.Error as exc:
+        raise ValueError("CSV file could not be parsed") from exc
+
     if not rows:
         raise ValueError("CSV file does not contain any customer rows")
+    if len(rows) > MAX_UPLOAD_ROWS:
+        raise ValueError(f"CSV file cannot contain more than {MAX_UPLOAD_ROWS:,} rows")
 
     return rows
+
+
+def validate_csv_rows(raw_rows: list[dict[str, Any]]) -> None:
+    identifiers: set[str] = set()
+    for index, row in enumerate(raw_rows, start=1):
+        identifier = get_first_value(
+            row,
+            "customerID",
+            "customer_identifier",
+            "CustomerID",
+            default=None,
+        )
+        resolved_identifier = identifier or f"customer-{index}"
+        if resolved_identifier in identifiers:
+            raise ValueError(
+                "Duplicate customer identifier on CSV row "
+                f"{index}: {resolved_identifier}"
+            )
+        identifiers.add(resolved_identifier)
 
 
 def build_customer_create_rows(
@@ -133,8 +173,11 @@ def build_customer_create_row(
         "customerID",
         "customer_identifier",
         "CustomerID",
-        default=f"customer-{index}",
+        default=None,
     )
+    if customer_identifier is None:
+        customer_identifier = f"customer-{index}"
+
     tenure_months = parse_required_int(
         get_first_value(row, "tenure", "tenure_months"),
         "tenure",
@@ -172,9 +215,13 @@ def parse_required_int(value: str | None, field_name: str) -> int:
         raise ValueError(f"Missing required field: {field_name}")
 
     try:
-        return int(value)
+        parsed_value = int(value)
     except ValueError as exc:
         raise ValueError(f"Invalid integer value for {field_name}") from exc
+
+    if parsed_value < 0:
+        raise ValueError(f"{field_name} cannot be negative")
+    return parsed_value
 
 
 def parse_optional_decimal(value: str | None) -> Decimal | None:
@@ -182,9 +229,13 @@ def parse_optional_decimal(value: str | None) -> Decimal | None:
         return None
 
     try:
-        return Decimal(value)
+        parsed_value = Decimal(value)
     except InvalidOperation as exc:
         raise ValueError("Invalid decimal value in uploaded CSV") from exc
+
+    if not parsed_value.is_finite() or parsed_value < 0:
+        raise ValueError("Decimal values in uploaded CSV must be finite and non-negative")
+    return parsed_value
 
 
 def parse_optional_bool(value: str | None) -> bool | None:

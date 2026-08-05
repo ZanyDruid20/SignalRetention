@@ -1,17 +1,14 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.rate_limit import rate_limit
 from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
 from app.models.recommendation import Recommendation
 from app.models.user import User
-from app.schemas.recommendation import RecommendationCreate, RecommendationRead
+from app.schemas.recommendation import RecommendationRead
 from app.services.recommendation_service import (
-    create_recommendation_for_customer,
-    create_recommendation_from_risk_tier,
     get_user_recommendation,
     list_recommendations_for_customer,
     list_recommendations_for_dataset,
@@ -58,39 +55,3 @@ async def get_recommendation(
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
 
-@router.post(
-    "",
-    response_model=RecommendationRead,
-    status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(rate_limit("recommendation_create", 20, 60))],
-)
-async def create_recommendation(
-    recommendation_data: RecommendationCreate,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> Recommendation:
-    try:
-        return await create_recommendation_for_customer(db, current_user, recommendation_data)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-    except PermissionError as exc:
-        raise HTTPException(status_code=403, detail=str(exc))
-    
-@router.post(
-    "/customer/{customer_id}/risk-tier",
-    response_model=RecommendationRead,
-    status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(rate_limit("recommendation_generate", 20, 60))],
-)
-async def create_recommendation_from_risk(
-    customer_id: uuid.UUID,
-    risk_tier: str,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> Recommendation:
-    try:
-        return await create_recommendation_from_risk_tier(db, current_user, customer_id, risk_tier)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-    except PermissionError as exc:
-        raise HTTPException(status_code=403, detail=str(exc))

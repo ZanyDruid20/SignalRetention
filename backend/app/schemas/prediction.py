@@ -1,15 +1,18 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+RiskTier = Literal["Low", "Medium", "High", "Critical"]
 
 
 class PredictionBase(BaseModel):
-    churn_probability: Decimal
-    risk_tier: str
-    health_score: int
-    model_version: str
+    churn_probability: Decimal = Field(ge=0, le=1)
+    risk_tier: RiskTier
+    health_score: int = Field(ge=0, le=100)
+    model_version: str = Field(min_length=1, max_length=100)
 
 
 class PredictionCreate(PredictionBase):

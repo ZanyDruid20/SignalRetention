@@ -33,6 +33,9 @@ def upload_bytes_to_gcs(
 
     bucket = get_gcs_bucket()
     blob = bucket.blob(blob_path)
+    # Uploaded datasets are data inputs, never browser-renderable application assets.
+    blob.content_disposition = "attachment"
+    blob.cache_control = "no-store"
     blob.upload_from_string(file_bytes, content_type=content_type)
 
     return blob_path

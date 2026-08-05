@@ -1,21 +1,72 @@
 import uuid
+from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
 from app.models.customer import Customer
 from app.models.user import User
-from app.schemas.customer import CustomerCreate, CustomerRead
+from app.schemas.customer import (
+    CustomerCreate,
+    CustomerExplorerPage,
+    CustomerRead,
+    CustomerRiskTier,
+)
 from app.services.customer_service import (
     create_customer_for_dataset,
     create_customers_for_dataset_bulk,
     get_user_customer,
+    get_user_customer_explorer_page,
     list_customers_for_dataset,
 )
 
 router = APIRouter()
+
+
+@router.get(
+    "/dataset/{dataset_id}/explorer",
+    response_model=CustomerExplorerPage,
+)
+async def get_dataset_customer_explorer(
+    dataset_id: uuid.UUID,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=50, ge=10, le=100),
+    search: str | None = Query(default=None, max_length=100),
+    risk_tier: list[CustomerRiskTier] | None = Query(default=None),
+    contract_type: str | None = Query(default=None, max_length=100),
+    min_health: int | None = Query(default=None, ge=0, le=100),
+    max_health: int | None = Query(default=None, ge=0, le=100),
+    min_revenue: Decimal | None = Query(default=None, ge=0),
+    max_revenue: Decimal | None = Query(default=None, ge=0),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> CustomerExplorerPage:
+    if min_health is not None and max_health is not None and min_health > max_health:
+        raise HTTPException(status_code=400, detail="min_health cannot exceed max_health")
+    if min_revenue is not None and max_revenue is not None and min_revenue > max_revenue:
+        raise HTTPException(status_code=400, detail="min_revenue cannot exceed max_revenue")
+
+    try:
+        return await get_user_customer_explorer_page(
+            db=db,
+            current_user=current_user,
+            dataset_id=dataset_id,
+            page=page,
+            page_size=page_size,
+            search=search.strip() if search else None,
+            risk_tiers=list(risk_tier) if risk_tier else None,
+            contract_type=contract_type,
+            min_health=min_health,
+            max_health=max_health,
+            min_revenue=min_revenue,
+            max_revenue=max_revenue,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
 
 @router.get("/dataset/{dataset_id}", response_model=list[CustomerRead])
 async def list_dataset_customers(
