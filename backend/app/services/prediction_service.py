@@ -115,7 +115,7 @@ async def get_user_prediction_overview(
             risk_tier=cast(HighRiskTier, row.risk_tier),
             churn_probability=row.churn_probability,
             monthly_revenue=row.monthly_revenue,
-            recommended_action=None,
+            recommended_action=row.recommended_action,
         )
         for row in high_risk_rows
     ]

@@ -70,6 +70,41 @@ export type PredictionRead = {
     created_at: string;
 }
 
+export type PredictionOverviewSummary = {
+    critical_count: number;
+    high_count: number;
+    average_churn_probability: string | null;
+    monthly_revenue_at_risk: string;
+}
+
+export type PredictionRiskDistributionItem = {
+    risk_tier: RiskTier;
+    count: number;
+}
+
+export type HighRiskPredictionCustomer = {
+    customer_id: string;
+    customer_identifier: string;
+    risk_tier: Extract<RiskTier, "High" | "Critical">;
+    churn_probability: string;
+    monthly_revenue: string | null;
+    recommended_action: string | null;
+}
+
+export type HighRiskPredictionPage = {
+    items: HighRiskPredictionCustomer[];
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+}
+
+export type PredictionOverview = {
+    summary: PredictionOverviewSummary;
+    risk_distribution: PredictionRiskDistributionItem[];
+    high_risk_customers: HighRiskPredictionPage;
+}
+
 export type RecommendationRead = {
     id: string;
     customer_id: string;

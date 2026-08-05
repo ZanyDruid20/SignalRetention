@@ -16,15 +16,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import type { PredictionRiskDistributionItem } from "@/types/api";
 
-const riskData = [
-  { risk: "Critical", customers: 18 },
-  { risk: "High", customers: 42 },
-  { risk: "Medium", customers: 87 },
-  { risk: "Low", customers: 124 },
-];
+type RiskDistributionChartProps = {
+  distribution: PredictionRiskDistributionItem[];
+};
 
-export function RiskDistributionChart() {
+export function RiskDistributionChart({
+  distribution,
+}: RiskDistributionChartProps) {
+  const chartData = distribution.map((item) => ({
+    risk: item.risk_tier,
+    customers: item.count,
+  }));
+
   return (
     <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
       <CardHeader>
@@ -41,7 +46,7 @@ export function RiskDistributionChart() {
         <div className="h-87.5">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={riskData}
+              data={chartData}
               layout="vertical"
               margin={{
                 top: 10,

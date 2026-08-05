@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import Customer
 from app.models.prediction import Prediction
+from app.models.recommendation import Recommendation
 from app.schemas.prediction import PredictionCreate
 
 
@@ -126,6 +127,25 @@ async def get_prediction_overview(
     )
 
     # 4. Current page of high-risk customers
+    recommendation_action = (
+        select(Recommendation.action)
+        .where(Recommendation.customer_id == Customer.id)
+        .order_by(
+            case(
+                (Recommendation.priority == "urgent", 1),
+                (Recommendation.priority == "high", 2),
+                (Recommendation.priority == "medium", 3),
+                (Recommendation.priority == "low", 4),
+                else_=5,
+            ),
+            Recommendation.created_at.desc(),
+            Recommendation.id.asc(),
+        )
+        .limit(1)
+        .correlate(Customer)
+        .scalar_subquery()
+    )
+
     customers_statement = (
         select(
             Customer.id.label("customer_id"),
@@ -133,6 +153,7 @@ async def get_prediction_overview(
             Customer.monthly_revenue,
             Prediction.risk_tier,
             Prediction.churn_probability,
+            recommendation_action.label("recommended_action"),
         )
         .join(Prediction, Prediction.customer_id == Customer.id)
         .where(
