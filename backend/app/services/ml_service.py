@@ -1,16 +1,12 @@
+import uuid
 from decimal import Decimal
 from typing import Any, TypedDict
 
 import httpx
 
 from app.core.config import settings
-from app.schemas.prediction import PredictionCreate
-from app.schemas.recommendation import RecommendationCreate
-
-
-class ChurnDriver(TypedDict):
-    feature: str
-    impact: float
+from app.schemas.prediction import PredictionCreate, RiskTier
+from app.schemas.recommendation import ChurnDriver, RecommendationCreate
 
 
 class DatasetPredictionResult(TypedDict):
@@ -19,7 +15,7 @@ class DatasetPredictionResult(TypedDict):
     recommended_action: str
 
 
-def get_risk_tier(churn_probability: Decimal) -> str:
+def get_risk_tier(churn_probability: Decimal) -> RiskTier:
     """Convert churn probability into a business risk tier."""
     if churn_probability >= Decimal("0.80"):
         return "Critical"
@@ -37,7 +33,7 @@ def get_health_score(churn_probability: Decimal) -> int:
 
 
 def build_prediction(
-    customer_id,
+    customer_id: uuid.UUID,
     churn_probability: Decimal,
     model_version: str,
 ) -> PredictionCreate:
@@ -52,9 +48,10 @@ def build_prediction(
 
 
 def build_recommendation(
-    customer_id,
+    customer_id: uuid.UUID,
     risk_tier: str,
     recommended_action: str | None = None,
+    top_drivers: list[ChurnDriver] | None = None,
 ) -> RecommendationCreate:
     if risk_tier == "Critical":
         action = "Schedule immediate retention call and offer annual contract incentive."
@@ -78,6 +75,7 @@ def build_recommendation(
         action=recommended_action or action,
         priority=priority,
         expected_impact=expected_impact,
+        top_drivers=top_drivers or [],
     )
 
 
@@ -104,7 +102,7 @@ async def predict_churn_probability(customer_data: dict[str, Any]) -> Decimal:
 
 
 async def build_prediction_from_customer_data(
-    customer_id,
+    customer_id: uuid.UUID,
     customer_data: dict[str, Any],
     model_version: str,
 ) -> PredictionCreate:
@@ -129,7 +127,10 @@ async def predict_dataset(
     return [
         {
             "churn_probability": Decimal(str(item["churn_probability"])),
-            "top_drivers": item.get("top_drivers", []),
+            "top_drivers": [
+                ChurnDriver.model_validate(driver)
+                for driver in item.get("top_drivers", [])
+            ],
             "recommended_action": item["recommended_action"],
         }
         for item in data["predictions"]

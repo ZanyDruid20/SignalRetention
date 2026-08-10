@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies.auth import get_current_user
@@ -9,9 +9,11 @@ from app.models.recommendation import Recommendation
 from app.models.user import User
 from app.schemas.recommendation import (
     RecommendationRead,
+    RecommendationOverview,
     RecommendationStatusUpdate,
 )
 from app.services.recommendation_service import (
+    get_user_recommendation_overview,
     get_user_recommendation,
     list_recommendations_for_customer,
     list_recommendations_for_dataset,
@@ -47,6 +49,31 @@ async def list_dataset_recommendations(
         raise HTTPException(status_code=404, detail=str(exc))
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
+
+
+@router.get(
+    "/dataset/{dataset_id}/overview",
+    response_model=RecommendationOverview,
+)
+async def get_recommendation_overview(
+    dataset_id: uuid.UUID,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> RecommendationOverview:
+    try:
+        return await get_user_recommendation_overview(
+            db=db,
+            current_user=current_user,
+            dataset_id=dataset_id,
+            page=page,
+            page_size=page_size,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
 @router.get("/{recommendation_id}", response_model=RecommendationRead)

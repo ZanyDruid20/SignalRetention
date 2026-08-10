@@ -1,11 +1,12 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import Customer
 from app.models.dataset import Dataset
+from app.models.prediction import Prediction
 from app.models.recommendation import Recommendation
 from app.schemas.recommendation import RecommendationCreate
 from app.schemas.recommendation import RecommendationStatus
@@ -106,3 +107,80 @@ async def update_recommendation_status(
     await db.refresh(recommendation)
 
     return recommendation
+
+
+async def get_recommendation_overview_data(
+    db: AsyncSession,
+    dataset_id: uuid.UUID,
+    page: int,
+    page_size: int,
+):
+    summary_statement = (
+        select(
+            func.count(Recommendation.id).label("total_recommendations"),
+            func.count(Recommendation.id)
+            .filter(Recommendation.priority.in_(("urgent", "high")))
+            .label("high_priority_count"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            Recommendation.status != "completed",
+                            Customer.monthly_revenue,
+                        ),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("monthly_revenue_at_risk"),
+            func.count(Recommendation.id)
+            .filter(Recommendation.status == "completed")
+            .label("completed_count"),
+        )
+        .select_from(Recommendation)
+        .join(Customer, Recommendation.customer_id == Customer.id)
+        .where(Customer.dataset_id == dataset_id)
+    )
+    summary = (await db.execute(summary_statement)).one()
+
+    items_statement = (
+        select(
+            Recommendation.id,
+            Recommendation.customer_id,
+            Customer.customer_identifier,
+            Recommendation.action,
+            Recommendation.priority,
+            Recommendation.expected_impact,
+            Recommendation.top_drivers,
+            Recommendation.status,
+            Customer.monthly_revenue,
+            Prediction.churn_probability,
+            Prediction.risk_tier,
+            Recommendation.completed_at,
+            Recommendation.created_at,
+        )
+        .select_from(Recommendation)
+        .join(Customer, Recommendation.customer_id == Customer.id)
+        .outerjoin(Prediction, Prediction.customer_id == Customer.id)
+        .where(Customer.dataset_id == dataset_id)
+        .order_by(
+            case(
+                (Recommendation.status == "new", 0),
+                (Recommendation.status == "in_progress", 1),
+                else_=2,
+            ),
+            case(
+                (Recommendation.priority == "urgent", 0),
+                (Recommendation.priority == "high", 1),
+                (Recommendation.priority == "medium", 2),
+                else_=3,
+            ),
+            Recommendation.created_at.desc(),
+            Recommendation.id,
+        )
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    items = (await db.execute(items_statement)).all()
+
+    return summary, items

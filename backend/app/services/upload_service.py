@@ -84,6 +84,7 @@ async def process_dataset_upload(
                     customer_id=customer.id,
                     risk_tier=prediction.risk_tier,
                     recommended_action=prediction_result["recommended_action"],
+                    top_drivers=prediction_result["top_drivers"],
                 )
             )
 

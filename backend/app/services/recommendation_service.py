@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,13 +8,20 @@ from app.models.user import User
 from app.repositories.recommendation_repository import (
     create_recommendation,
     create_recommendations_bulk,
+    get_recommendation_overview_data,
     get_recommendation_by_id,
     list_recommendations_by_customer_id,
     list_recommendations_by_dataset_id,
     update_recommendation_status,
 )
-from app.schemas.recommendation import RecommendationCreate
-from app.schemas.recommendation import RecommendationStatus
+from app.schemas.recommendation import (
+    RecommendationCreate,
+    RecommendationOverview,
+    RecommendationOverviewItem,
+    RecommendationOverviewPage,
+    RecommendationOverviewSummary,
+    RecommendationStatus,
+)
 from app.services.customer_service import get_user_customer
 from app.services.dataset_service import get_user_dataset
 from app.services.ml_service import build_recommendation
@@ -80,6 +88,7 @@ async def create_recommendations_for_customers_bulk(
         await get_user_customer(db, current_user, recommendation_data.customer_id)
     return await create_recommendations_bulk(db, recommendations_data)
 
+
 async def update_user_recommendation_status(
     db: AsyncSession,
     recommendation_id: uuid.UUID,
@@ -97,3 +106,44 @@ async def update_user_recommendation_status(
         raise ValueError("Recommendation not found")
 
     return recommendation
+
+
+async def get_user_recommendation_overview(
+    db: AsyncSession,
+    current_user: User,
+    dataset_id: uuid.UUID,
+    page: int,
+    page_size: int,
+) -> RecommendationOverview:
+    await get_user_dataset(db, current_user, dataset_id)
+    summary_row, item_rows = await get_recommendation_overview_data(
+        db=db,
+        dataset_id=dataset_id,
+        page=page,
+        page_size=page_size,
+    )
+
+    summary_data = summary_row._mapping
+    total = int(summary_data["total_recommendations"] or 0)
+    completed = int(summary_data["completed_count"] or 0)
+    completion_rate = Decimal(completed) / Decimal(total) if total else Decimal(0)
+
+    return RecommendationOverview(
+        summary=RecommendationOverviewSummary(
+            total_recommendations=total,
+            high_priority_count=int(summary_data["high_priority_count"] or 0),
+            monthly_revenue_at_risk=Decimal(
+                summary_data["monthly_revenue_at_risk"] or 0
+            ),
+            completion_rate=completion_rate,
+        ),
+        recommendations=RecommendationOverviewPage(
+            items=[
+                RecommendationOverviewItem.model_validate(dict(row._mapping))
+                for row in item_rows
+            ],
+            page=page,
+            page_size=page_size,
+            total=total,
+        ),
+    )
