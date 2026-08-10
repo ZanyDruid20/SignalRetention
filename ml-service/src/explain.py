@@ -2,7 +2,10 @@ from pathlib import Path
 import joblib
 import shap
 
-from preprocessing import preprocess_data
+try:
+    from .preprocessing import preprocess_data
+except ImportError:
+    from preprocessing import preprocess_data
 
 MODEL_PATH = Path("models/churn_model.pkl")
 

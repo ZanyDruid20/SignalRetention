@@ -1,11 +1,22 @@
 from decimal import Decimal
-from typing import Any
+from typing import Any, TypedDict
 
 import httpx
 
 from app.core.config import settings
 from app.schemas.prediction import PredictionCreate
 from app.schemas.recommendation import RecommendationCreate
+
+
+class ChurnDriver(TypedDict):
+    feature: str
+    impact: float
+
+
+class DatasetPredictionResult(TypedDict):
+    churn_probability: Decimal
+    top_drivers: list[ChurnDriver]
+    recommended_action: str
 
 
 def get_risk_tier(churn_probability: Decimal) -> str:
@@ -43,6 +54,7 @@ def build_prediction(
 def build_recommendation(
     customer_id,
     risk_tier: str,
+    recommended_action: str | None = None,
 ) -> RecommendationCreate:
     if risk_tier == "Critical":
         action = "Schedule immediate retention call and offer annual contract incentive."
@@ -63,7 +75,7 @@ def build_recommendation(
 
     return RecommendationCreate(
         customer_id=customer_id,
-        action=action,
+        action=recommended_action or action,
         priority=priority,
         expected_impact=expected_impact,
     )
@@ -101,8 +113,10 @@ async def build_prediction_from_customer_data(
     return build_prediction(customer_id, churn_probability, model_version)
 
 
-async def predict_dataset(customers_data: list[dict[str, Any]]) -> list[Decimal]:
-    """Request batch churn probabilities from the separate ML service."""
+async def predict_dataset(
+    customers_data: list[dict[str, Any]],
+) -> list[DatasetPredictionResult]:
+    """Request batch predictions and explanations from the ML service."""
     async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.post(
             f"{settings.ml_service_url}/predict/batch",
@@ -113,6 +127,10 @@ async def predict_dataset(customers_data: list[dict[str, Any]]) -> list[Decimal]
     data = response.json()
 
     return [
-        Decimal(str(item["churn_probability"]))
+        {
+            "churn_probability": Decimal(str(item["churn_probability"])),
+            "top_drivers": item.get("top_drivers", []),
+            "recommended_action": item["recommended_action"],
+        }
         for item in data["predictions"]
     ]

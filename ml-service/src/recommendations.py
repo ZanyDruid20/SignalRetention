@@ -1,5 +1,9 @@
-from predict import predict_churn
-from explain import explain_predictions
+try:
+    from .explain import explain_predictions
+    from .predict import predict_churn
+except ImportError:
+    from explain import explain_predictions
+    from predict import predict_churn
 
 
 def generate_recommendation(risk_tier: str, top_drivers: list[dict]) -> str:

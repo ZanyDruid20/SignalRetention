@@ -10,8 +10,10 @@ from app.repositories.recommendation_repository import (
     get_recommendation_by_id,
     list_recommendations_by_customer_id,
     list_recommendations_by_dataset_id,
+    update_recommendation_status,
 )
 from app.schemas.recommendation import RecommendationCreate
+from app.schemas.recommendation import RecommendationStatus
 from app.services.customer_service import get_user_customer
 from app.services.dataset_service import get_user_dataset
 from app.services.ml_service import build_recommendation
@@ -77,3 +79,21 @@ async def create_recommendations_for_customers_bulk(
     for recommendation_data in recommendations_data:
         await get_user_customer(db, current_user, recommendation_data.customer_id)
     return await create_recommendations_bulk(db, recommendations_data)
+
+async def update_user_recommendation_status(
+    db: AsyncSession,
+    recommendation_id: uuid.UUID,
+    user_id: uuid.UUID,
+    status: RecommendationStatus,
+) -> Recommendation:
+    recommendation = await update_recommendation_status(
+        db=db,
+        recommendation_id=recommendation_id,
+        user_id=user_id,
+        status=status,
+    )
+
+    if recommendation is None:
+        raise ValueError("Recommendation not found")
+
+    return recommendation

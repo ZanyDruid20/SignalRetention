@@ -1,11 +1,14 @@
 import uuid
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import Customer
+from app.models.dataset import Dataset
 from app.models.recommendation import Recommendation
 from app.schemas.recommendation import RecommendationCreate
+from app.schemas.recommendation import RecommendationStatus
 
 
 async def get_recommendation_by_id(
@@ -70,3 +73,36 @@ async def create_recommendations_bulk(
         await db.refresh(recommendation)
 
     return recommendations
+
+
+async def update_recommendation_status(
+    db: AsyncSession,
+    recommendation_id: uuid.UUID,
+    user_id: uuid.UUID,
+    status: RecommendationStatus,
+) -> Recommendation | None:
+    statement = (
+        select(Recommendation)
+        .join(Customer, Recommendation.customer_id == Customer.id)
+        .join(Dataset, Customer.dataset_id == Dataset.id)
+        .where(
+            Recommendation.id == recommendation_id,
+            Dataset.user_id == user_id,
+        )
+    )
+    result = await db.execute(statement)
+    recommendation = result.scalar_one_or_none()
+    if recommendation is None:
+        return None
+    recommendation.status = status
+
+    recommendation.completed_at = (
+        datetime.now(timezone.utc)
+        if status == "completed"
+        else None
+    )
+
+    await db.commit()
+    await db.refresh(recommendation)
+
+    return recommendation

@@ -66,12 +66,13 @@ async def process_dataset_upload(
             customers_data=customers_data,
         )
 
-        churn_probabilities = await predict_dataset(raw_rows)
-        if len(churn_probabilities) != len(customers):
+        prediction_results = await predict_dataset(raw_rows)
+        if len(prediction_results) != len(customers):
             raise ValueError("ML prediction count does not match customer count")
 
         recommendation_data = []
-        for customer, churn_probability in zip(customers, churn_probabilities):
+        for customer, prediction_result in zip(customers, prediction_results):
+            churn_probability = prediction_result["churn_probability"]
             prediction_data = build_prediction(
                 customer_id=customer.id,
                 churn_probability=churn_probability,
@@ -82,6 +83,7 @@ async def process_dataset_upload(
                 build_recommendation(
                     customer_id=customer.id,
                     risk_tier=prediction.risk_tier,
+                    recommended_action=prediction_result["recommended_action"],
                 )
             )
 

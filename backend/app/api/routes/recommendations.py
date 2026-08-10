@@ -7,14 +7,19 @@ from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
 from app.models.recommendation import Recommendation
 from app.models.user import User
-from app.schemas.recommendation import RecommendationRead
+from app.schemas.recommendation import (
+    RecommendationRead,
+    RecommendationStatusUpdate,
+)
 from app.services.recommendation_service import (
     get_user_recommendation,
     list_recommendations_for_customer,
     list_recommendations_for_dataset,
+    update_user_recommendation_status,
 )
 
 router = APIRouter()
+
 
 @router.get("/customer/{customer_id}", response_model=list[RecommendationRead])
 async def list_customer_recommendations(
@@ -29,6 +34,7 @@ async def list_customer_recommendations(
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
 
+
 @router.get("/dataset/{dataset_id}", response_model=list[RecommendationRead])
 async def list_dataset_recommendations(
     dataset_id: uuid.UUID,
@@ -41,7 +47,8 @@ async def list_dataset_recommendations(
         raise HTTPException(status_code=404, detail=str(exc))
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
-    
+
+
 @router.get("/{recommendation_id}", response_model=RecommendationRead)
 async def get_recommendation(
     recommendation_id: uuid.UUID,
@@ -54,4 +61,25 @@ async def get_recommendation(
         raise HTTPException(status_code=404, detail=str(exc))
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
+
+
+@router.patch(
+    "/{recommendation_id}/status",
+    response_model=RecommendationRead,
+)
+async def update_recommendation_status_route(
+    recommendation_id: uuid.UUID,
+    payload: RecommendationStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Recommendation:
+    try:
+        return await update_user_recommendation_status(
+            db=db,
+            recommendation_id=recommendation_id,
+            user_id=current_user.id,
+            status=payload.status,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
