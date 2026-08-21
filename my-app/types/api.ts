@@ -1,6 +1,11 @@
 export type RiskTier = "Low" | "Medium" | "High" | "Critical";
 export type RecommendationPriority = "urgent" | "high" | "medium" | "low";
-export type RecommendationStatus = "New" | "In Progress" | "Completed";
+export type RecommendationStatus = "new" | "in_progress" | "completed";
+
+export type ChurnDriver = {
+    feature: string;
+    impact: number;
+}
 
 export type UserRead = {
     id: string;
@@ -111,7 +116,36 @@ export type RecommendationRead = {
     action: string;
     priority: RecommendationPriority;
     expected_impact: string | null;
+    top_drivers: ChurnDriver[];
+    status: RecommendationStatus;
     created_at: string;
+    completed_at: string | null;
+}
+
+export type RecommendationOverviewSummary = {
+    total_recommendations: number;
+    high_priority_count: number;
+    monthly_revenue_at_risk: string;
+    completion_rate: string;
+}
+
+export type RecommendationOverviewItem = RecommendationRead & {
+    customer_identifier: string;
+    monthly_revenue: string | null;
+    churn_probability: string | null;
+    risk_tier: RiskTier | null;
+}
+
+export type RecommendationOverviewPage = {
+    items: RecommendationOverviewItem[];
+    page: number;
+    page_size: number;
+    total: number;
+}
+
+export type RecommendationOverview = {
+    summary: RecommendationOverviewSummary;
+    recommendations: RecommendationOverviewPage;
 }
 
 export type RiskTierCount = {

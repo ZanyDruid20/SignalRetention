@@ -39,3 +39,25 @@ export async function apiUpload<T>(
 
   return response.json();
 }
+
+export async function apiPatch<T, TBody>(
+  path: string,
+  token: string,
+  body: TBody
+): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `API request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}

@@ -114,6 +114,8 @@ async def get_recommendation_overview_data(
     dataset_id: uuid.UUID,
     page: int,
     page_size: int,
+    status: RecommendationStatus | None = None,
+    search: str | None = None,
 ):
     summary_statement = (
         select(
@@ -143,6 +145,22 @@ async def get_recommendation_overview_data(
     )
     summary = (await db.execute(summary_statement)).one()
 
+    item_filters = [Customer.dataset_id == dataset_id]
+    if status is not None:
+        item_filters.append(Recommendation.status == status)
+    if search:
+        item_filters.append(
+            Customer.customer_identifier.icontains(search, autoescape=True)
+        )
+
+    total_statement = (
+        select(func.count(Recommendation.id))
+        .select_from(Recommendation)
+        .join(Customer, Recommendation.customer_id == Customer.id)
+        .where(*item_filters)
+    )
+    filtered_total = int((await db.execute(total_statement)).scalar_one())
+
     items_statement = (
         select(
             Recommendation.id,
@@ -162,7 +180,7 @@ async def get_recommendation_overview_data(
         .select_from(Recommendation)
         .join(Customer, Recommendation.customer_id == Customer.id)
         .outerjoin(Prediction, Prediction.customer_id == Customer.id)
-        .where(Customer.dataset_id == dataset_id)
+        .where(*item_filters)
         .order_by(
             case(
                 (Recommendation.status == "new", 0),
@@ -183,4 +201,4 @@ async def get_recommendation_overview_data(
     )
     items = (await db.execute(items_statement)).all()
 
-    return summary, items
+    return summary, items, filtered_total

@@ -1,101 +1,130 @@
+import Link from "next/link";
+import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, ExternalLink } from "lucide-react";
-import { getPriorityColor, mockRecommendations } from "./recommendation-data";
+import type { RecommendationOverviewItem, RecommendationStatus } from "@/types/api";
+
+const priorityStyles = {
+  urgent: "border-red-300 bg-red-100 text-red-800",
+  high: "border-red-200 bg-red-50 text-red-700",
+  medium: "border-amber-200 bg-amber-50 text-amber-700",
+  low: "border-green-200 bg-green-50 text-green-700",
+};
+
+function formatPriority(priority: RecommendationOverviewItem["priority"]) {
+  return priority === "urgent"
+    ? "Urgent"
+    : `${priority.charAt(0).toUpperCase()}${priority.slice(1)}`;
+}
+
+function formatCurrency(value: string | null) {
+  if (value === null) return "Not available";
+  return Number(value).toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+  });
+}
 
 type RecommendedActionsProps = {
-  completedCards: Set<string>;
-  onToggleComplete: (id: string) => void;
+  recommendations: RecommendationOverviewItem[];
+  updatingId: string | null;
+  onStatusChange: (id: string, status: RecommendationStatus) => Promise<void>;
 };
 
 export function RecommendedActions({
-  completedCards,
-  onToggleComplete,
+  recommendations,
+  updatingId,
+  onStatusChange,
 }: RecommendedActionsProps) {
-  return (
-    <div>
-      <h2 className="mb-4 text-lg font-semibold">Recommended Actions</h2>
+  const activeRecommendations = recommendations
+    .filter((item) => item.status !== "completed")
+    .slice(0, 4);
 
+  if (activeRecommendations.length === 0) return null;
+
+  return (
+    <section>
+      <h2 className="mb-4 text-lg font-semibold">Recommended Actions</h2>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {mockRecommendations.map((recommendation) => {
-          const isCompleted = completedCards.has(recommendation.id);
+        {activeRecommendations.map((recommendation) => {
+          const isUpdating = updatingId === recommendation.id;
+          const primaryDriver = recommendation.top_drivers[0];
 
           return (
             <Card
               key={recommendation.id}
-              className={`border p-6 transition-all ${
-                isCompleted
-                  ? "border-[#E7DED1] bg-muted/30 opacity-60 dark:border-[#3A312A] dark:bg-muted/20"
-                  : "border-[#E7DED1] bg-card shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]"
-              }`}
+              className="border border-[#E7DED1] bg-card p-6 shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]"
             >
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
+                  <div>
                     <h3 className="font-semibold">
-                      {recommendation.customerName}
+                      {recommendation.customer_identifier}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {recommendation.companyName}
+                      {recommendation.risk_tier ?? "Risk unavailable"}
                     </p>
                   </div>
-
                   <Badge
                     variant="outline"
-                    className={`whitespace-nowrap border ${getPriorityColor(
-                      recommendation.priority
-                    )}`}
+                    className={priorityStyles[recommendation.priority]}
                   >
-                    {recommendation.priority}
+                    {formatPriority(recommendation.priority)}
                   </Badge>
                 </div>
 
                 <div>
                   <p className="mb-1 text-sm text-muted-foreground">Action</p>
-                  <p className="text-sm font-medium">
-                    {recommendation.action}
-                  </p>
+                  <p className="text-sm font-medium">{recommendation.action}</p>
                 </div>
 
-                <div className="flex gap-4 pt-2">
+                <div className="flex gap-6">
                   <div>
-                    <p className="text-xs text-muted-foreground">
-                      Revenue Saved
-                    </p>
-                    <p className="text-sm font-semibold text-green-600">
-                      {recommendation.revenueSaved}
+                    <p className="text-xs text-muted-foreground">Monthly revenue</p>
+                    <p className="text-sm font-semibold text-green-700">
+                      {formatCurrency(recommendation.monthly_revenue)}
                     </p>
                   </div>
-
                   <div>
-                    <p className="text-xs text-muted-foreground">Confidence</p>
+                    <p className="text-xs text-muted-foreground">Churn probability</p>
                     <p className="text-sm font-semibold">
-                      {recommendation.confidenceScore}%
+                      {recommendation.churn_probability === null
+                        ? "Not available"
+                        : `${(Number(recommendation.churn_probability) * 100).toFixed(1)}%`}
                     </p>
                   </div>
                 </div>
 
                 <div className="rounded-lg bg-muted/40 p-3 dark:bg-muted/30">
-                  <p className="mb-1 text-xs text-muted-foreground">
-                    Why this action
+                  <p className="mb-1 text-xs text-muted-foreground">Why this action</p>
+                  <p className="text-sm">
+                    {primaryDriver
+                      ? `${primaryDriver.feature} was a leading churn driver.`
+                      : recommendation.expected_impact ?? "Model-generated retention action."}
                   </p>
-                  <p className="text-sm">{recommendation.reason}</p>
                 </div>
 
                 <div className="flex gap-2 pt-2">
                   <Button
-                    variant={isCompleted ? "secondary" : "default"}
+                    type="button"
                     className="h-9 flex-1 text-xs"
-                    onClick={() => onToggleComplete(recommendation.id)}
+                    disabled={isUpdating}
+                    onClick={() => void onStatusChange(recommendation.id, "completed")}
                   >
-                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                    {isCompleted ? "Completed" : "Mark as Done"}
+                    {isUpdating ? (
+                      <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="mr-1.5 size-3.5" />
+                    )}
+                    Mark as Done
                   </Button>
-
-                  <Button variant="outline" className="h-9 flex-1 text-xs">
-                    <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                    View Customer
+                  <Button asChild variant="outline" className="h-9 flex-1 text-xs">
+                    <Link href="/customers">
+                      <ExternalLink className="mr-1.5 size-3.5" />
+                      View Customer
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -103,6 +132,6 @@ export function RecommendedActions({
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }

@@ -114,13 +114,17 @@ async def get_user_recommendation_overview(
     dataset_id: uuid.UUID,
     page: int,
     page_size: int,
+    status: RecommendationStatus | None = None,
+    search: str | None = None,
 ) -> RecommendationOverview:
     await get_user_dataset(db, current_user, dataset_id)
-    summary_row, item_rows = await get_recommendation_overview_data(
+    summary_row, item_rows, filtered_total = await get_recommendation_overview_data(
         db=db,
         dataset_id=dataset_id,
         page=page,
         page_size=page_size,
+        status=status,
+        search=search,
     )
 
     summary_data = summary_row._mapping
@@ -144,6 +148,6 @@ async def get_user_recommendation_overview(
             ],
             page=page,
             page_size=page_size,
-            total=total,
+            total=filtered_total,
         ),
     )

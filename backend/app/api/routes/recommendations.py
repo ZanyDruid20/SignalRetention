@@ -10,6 +10,7 @@ from app.models.user import User
 from app.schemas.recommendation import (
     RecommendationRead,
     RecommendationOverview,
+    RecommendationStatus,
     RecommendationStatusUpdate,
 )
 from app.services.recommendation_service import (
@@ -59,6 +60,8 @@ async def get_recommendation_overview(
     dataset_id: uuid.UUID,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=10, ge=1, le=100),
+    status: RecommendationStatus | None = Query(default=None),
+    search: str | None = Query(default=None, min_length=1, max_length=255),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> RecommendationOverview:
@@ -69,6 +72,8 @@ async def get_recommendation_overview(
             dataset_id=dataset_id,
             page=page,
             page_size=page_size,
+            status=status,
+            search=search.strip() if search else None,
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
