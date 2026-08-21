@@ -1,5 +1,5 @@
 import { apiGet } from "@/lib/api/client";
-import type { CustomerExplorerPage, CustomerRead, RiskTier } from "@/types/api";
+import type { CustomerDetail, CustomerExplorerPage, CustomerRead, RiskTier } from "@/types/api";
 
 export type CustomerExplorerParams = {
   page: number;
@@ -29,6 +29,16 @@ export async function listDatasetCustomers(
 ): Promise<CustomerRead[]> {
   return apiGet<CustomerRead[]>(
     `/customers/dataset/${encodeURIComponent(datasetId)}`,
+    token
+  );
+}
+
+export async function getCustomerDetail(
+  token: string,
+  customerId: string,
+): Promise<CustomerDetail> {
+  return apiGet<CustomerDetail>(
+    `/customers/${encodeURIComponent(customerId)}/detail`,
     token
   );
 }

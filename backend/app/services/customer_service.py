@@ -12,13 +12,41 @@ from app.repositories.customer_repository import (
     get_customer_explorer_page,
     list_customers_by_dataset_id,
 )
+
+from app.schemas.prediction import PredictionRead
+from app.schemas.recommendation import RecommendationRead
+
+from app.repositories.prediction_repository import (
+    get_prediction_by_customer_id,
+)
+from app.repositories.recommendation_repository import (
+    list_recommendations_by_customer_id,
+)
 from app.schemas.customer import (
     CustomerCreate,
+    CustomerDetail,
     CustomerExplorerItem,
     CustomerExplorerPage,
     CustomerExplorerSummary,
+    CustomerRead,
+    CustomerRiskTier,
 )
 from app.services.dataset_service import get_user_dataset
+
+
+def normalize_risk_tier(value: str | None) -> CustomerRiskTier | None:
+    tiers: dict[str, CustomerRiskTier] = {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical",
+    }
+
+    if value is None:
+        return None
+
+    return tiers.get(value.strip().lower())
+
 
 async def get_user_customer(
     db: AsyncSession,
@@ -80,7 +108,9 @@ async def get_user_customer_explorer_page(
             monthly_revenue=customer.monthly_revenue,
             contract_type=customer.contract_type,
             actual_churn=customer.actual_churn,
-            risk_tier=prediction.risk_tier if prediction else None,
+            risk_tier=normalize_risk_tier(
+                prediction.risk_tier if prediction else None
+            ),
             health_score=prediction.health_score if prediction else None,
             churn_probability=prediction.churn_probability if prediction else None,
         )
@@ -127,3 +157,31 @@ async def create_customers_for_dataset_bulk(
             raise ValueError("Customer dataset_id does not match target dataset")
 
     return await create_customers_bulk(db, customers_data)
+
+
+async def get_customer_detail(
+    db: AsyncSession,
+    current_user: User,
+    customer_id: uuid.UUID,
+) -> CustomerDetail:
+    customer = await get_user_customer(db, current_user, customer_id)
+    dataset = await get_user_dataset(db, current_user, customer.dataset_id)
+    prediction = await get_prediction_by_customer_id(db, customer.id)
+    recommendations = await list_recommendations_by_customer_id(
+        db,
+        customer.id,
+    )
+    return CustomerDetail(
+    customer=CustomerRead.model_validate(customer),
+    dataset_name=dataset.name,
+    dataset_filename=dataset.filename,
+    prediction=(
+        PredictionRead.model_validate(prediction)
+        if prediction is not None
+        else None
+    ),
+    recommendations=[
+        RecommendationRead.model_validate(recommendation)
+        for recommendation in recommendations
+    ],
+)

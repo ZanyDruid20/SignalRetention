@@ -16,6 +16,7 @@ def verify_clerk_token(token: str) -> AuthUser:
         algorithms=["RS256"],
         issuer=settings.clerk_issuer,
         options={"verify_aud": False},
+        leeway=10,
     )
 
     token_payload = AuthTokenPayload(

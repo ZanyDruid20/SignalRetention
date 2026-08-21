@@ -26,6 +26,14 @@ export type DatasetRead = {
     created_at: string;
 }
 
+export type CustomerDetail = {
+    customer: CustomerRead;
+    dataset_name: string;
+    dataset_filename: string;
+    prediction: PredictionRead | null;
+    recommendations: RecommendationRead[];
+}
+
 export type CustomerRead = {
     id: string;
     dataset_id: string;

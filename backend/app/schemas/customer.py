@@ -4,7 +4,8 @@ from decimal import Decimal
 from typing import Literal
 
 from pydantic import BaseModel, Field
-
+from app.schemas.prediction import PredictionRead
+from app.schemas.recommendation import RecommendationRead
 class CustomerBase(BaseModel):
     customer_identifier: str = Field(min_length=1, max_length=255)
     tenure_months: int = Field(ge=0)
@@ -54,3 +55,10 @@ class CustomerExplorerPage(BaseModel):
     page_size: int = Field(ge=1, le=100)
     total: int = Field(ge=0)
     total_pages: int = Field(ge=0)
+
+class CustomerDetail(BaseModel):
+    customer: CustomerRead
+    dataset_name: str
+    dataset_filename: str
+    prediction: PredictionRead | None = None
+    recommendations: list[RecommendationRead] = Field(default_factory=list)

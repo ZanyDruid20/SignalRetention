@@ -10,6 +10,7 @@ from app.models.customer import Customer
 from app.models.user import User
 from app.schemas.customer import (
     CustomerCreate,
+    CustomerDetail,
     CustomerExplorerPage,
     CustomerRead,
     CustomerRiskTier,
@@ -17,6 +18,7 @@ from app.schemas.customer import (
 from app.services.customer_service import (
     create_customer_for_dataset,
     create_customers_for_dataset_bulk,
+    get_customer_detail,
     get_user_customer,
     get_user_customer_explorer_page,
     list_customers_for_dataset,
@@ -68,6 +70,7 @@ async def get_dataset_customer_explorer(
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
 
+
 @router.get("/dataset/{dataset_id}", response_model=list[CustomerRead])
 async def list_dataset_customers(
     dataset_id: uuid.UUID,
@@ -81,12 +84,13 @@ async def list_dataset_customers(
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
 
+
 @router.get("/{customer_id}", response_model=CustomerRead)
 async def get_customer(
     customer_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Customer: 
+) -> Customer:
     try:
         return await get_user_customer(db, current_user, customer_id)
     except ValueError as exc:
@@ -108,7 +112,12 @@ async def create_customer(
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
 
-@router.post("/dataset/{dataset_id}/bulk", response_model=list[CustomerRead], status_code=status.HTTP_201_CREATED)
+
+@router.post(
+    "/dataset/{dataset_id}/bulk",
+    response_model=list[CustomerRead],
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_customers_bulk_route(
     dataset_id: uuid.UUID,
     customers_data: list[CustomerCreate],
@@ -126,3 +135,17 @@ async def create_customers_bulk_route(
         raise HTTPException(status_code=400, detail=str(exc))
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
+
+
+@router.get("/{customer_id}/detail", response_model=CustomerDetail)
+async def customer_detail_route(
+    customer_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> CustomerDetail:
+    try:
+        return await get_customer_detail(db, current_user, customer_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc

@@ -121,7 +121,7 @@ export function RecommendedActions({
                     Mark as Done
                   </Button>
                   <Button asChild variant="outline" className="h-9 flex-1 text-xs">
-                    <Link href="/customers">
+                    <Link href={`/customers/${recommendation.customer_id}`}>
                       <ExternalLink className="mr-1.5 size-3.5" />
                       View Customer
                     </Link>

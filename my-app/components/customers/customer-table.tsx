@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,6 +109,7 @@ export function CustomerTable({
                 <th className="px-4 pb-4 font-semibold">Monthly Revenue</th>
                 <th className="px-4 pb-4 font-semibold">Contract</th>
                 <th className="px-4 pb-4 font-semibold">Status</th>
+                <th className="px-4 pb-4 text-right font-semibold">Actions</th>
               </tr>
             </thead>
 
@@ -147,13 +149,28 @@ export function CustomerTable({
                   <td className="px-4 py-5">
                     <StatusBadge status={customer.status} />
                   </td>
+                  <td className="px-4 py-5 text-right">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="icon"
+                      title={`View ${customer.customerName}`}
+                    >
+                      <Link
+                        href={`/customers/${customer.id}`}
+                        aria-label={`View ${customer.customerName}`}
+                      >
+                        <Eye className="size-4" />
+                      </Link>
+                    </Button>
+                  </td>
                 </tr>
               ))}
 
               {rows.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-12 text-center text-muted-foreground"
                   >
                     No customers match the current filters.
