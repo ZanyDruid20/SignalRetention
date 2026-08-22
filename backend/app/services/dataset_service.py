@@ -6,12 +6,17 @@ from app.models.dataset import Dataset
 from app.models.user import User
 from app.repositories.dataset_repository import (
     create_dataset,
+    delete_dataset,
     get_dataset_by_id,
     list_datasets_by_user_id,
     update_dataset_upload_metadata,
     update_dataset_status,
 )
 from app.schemas.dataset import DatasetCreate
+from app.services.storage_service import (
+    build_dataset_upload_path,
+    delete_dataset_file,
+)
 
 async def create_dataset_for_user(
         db: AsyncSession,
@@ -85,3 +90,19 @@ async def complete_user_dataset_upload(
         raise ValueError("Dataset not found")
 
     return updated_dataset
+
+
+async def delete_user_dataset(
+    db: AsyncSession,
+    current_user: User,
+    dataset_id: uuid.UUID,
+) -> None:
+    dataset = await get_user_dataset(db, current_user, dataset_id)
+    blob_path = build_dataset_upload_path(
+        user_id=str(dataset.user_id),
+        dataset_id=str(dataset.id),
+        filename=dataset.filename,
+    )
+
+    await delete_dataset_file(blob_path)
+    await delete_dataset(db, dataset)

@@ -8,7 +8,7 @@ import { DatasetsHeader } from "@/components/datasets/datasets-header";
 import { DatasetsStats } from "@/components/datasets/datasets-stats";
 import { DataSetsUploader } from "@/components/datasets/datasets-uploader";
 import { DatasetTable } from "@/components/datasets/datasets-table";
-import { useDatasetUpload } from "@/hooks/use-datasets";
+import { useDatasetDelete, useDatasetUpload } from "@/hooks/use-datasets";
 import type { DatasetRead } from "@/types/api";
 
 export default function DatasetsPage() {
@@ -18,6 +18,7 @@ export default function DatasetsPage() {
   const [isLoadingDatasets, setIsLoadingDatasets] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
   const { error, status, uploadFile } = useDatasetUpload();
+  const { deletingDatasetId, deleteError, removeDataset } = useDatasetDelete();
   const loadDatasets = useCallback(async () => {
     try {
       const token = await getToken({ template: "signalretention" });
@@ -47,6 +48,16 @@ export default function DatasetsPage() {
 
   function handleUploadComplete(dataset: DatasetRead) {
     setDatasets((currentDatasets) => [dataset, ...currentDatasets]);
+  }
+
+  async function handleDeleteDataset(datasetId: string) {
+    const deleted = await removeDataset(datasetId);
+    if (deleted) {
+      setDatasets((currentDatasets) =>
+        currentDatasets.filter((dataset) => dataset.id !== datasetId)
+      );
+    }
+    return deleted;
   }
   const totalDatasets = datasets.length;
   const activeDatasets = datasets.filter(
@@ -78,6 +89,9 @@ export default function DatasetsPage() {
           uploadedDatasets={datasets}
           isLoading={isLoadingDatasets}
           error={listError}
+          deletingDatasetId={deletingDatasetId}
+          deleteError={deleteError}
+          onDeleteDataset={handleDeleteDataset}
         />
       </main>
     </div>

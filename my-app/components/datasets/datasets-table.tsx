@@ -1,4 +1,5 @@
-import { CheckCircle, Eye, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle, Eye, Loader2, Trash2 } from "lucide-react";
 
 import {
   Card,
@@ -8,6 +9,15 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { DatasetRead } from "@/types/api";
 
 type Dataset = {
@@ -53,14 +63,28 @@ type DatasetTableProps = {
   uploadedDatasets?: DatasetRead[];
   isLoading?: boolean;
   error?: string | null;
+  deletingDatasetId: string | null;
+  deleteError: string | null;
+  onDeleteDataset: (datasetId: string) => Promise<boolean>;
 };
 
 export function DatasetTable({
   uploadedDatasets = [],
   isLoading = false,
   error = null,
+  deletingDatasetId,
+  deleteError,
+  onDeleteDataset,
 }: DatasetTableProps) {
+  const [datasetToDelete, setDatasetToDelete] = useState<Dataset | null>(null);
   const datasets = uploadedDatasets.map(mapDataset);
+
+  async function confirmDelete() {
+    if (!datasetToDelete) return;
+
+    const deleted = await onDeleteDataset(datasetToDelete.id);
+    if (deleted) setDatasetToDelete(null);
+  }
 
   return (
     <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
@@ -149,10 +173,16 @@ export function DatasetTable({
                       <Button
                         variant="outline"
                         size="icon"
-                        disabled
-                        title="Delete coming soon"
+                        title={`Delete ${dataset.name}`}
+                        aria-label={`Delete ${dataset.name}`}
+                        disabled={deletingDatasetId !== null}
+                        onClick={() => setDatasetToDelete(dataset)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {deletingDatasetId === dataset.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </td>
@@ -173,6 +203,49 @@ export function DatasetTable({
           </table>
         </div>
       </CardContent>
+
+      <Dialog
+        open={datasetToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && deletingDatasetId === null) setDatasetToDelete(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete dataset?</DialogTitle>
+            <DialogDescription>
+              This permanently deletes {datasetToDelete?.name}, its uploaded
+              CSV, customers, predictions, and recommendations. This action
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          {deleteError && (
+            <p role="alert" className="text-sm text-red-700">
+              {deleteError}
+            </p>
+          )}
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" disabled={deletingDatasetId !== null}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={deletingDatasetId !== null}
+              onClick={() => void confirmDelete()}
+            >
+              {deletingDatasetId !== null && (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
+              Delete dataset
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

@@ -3,7 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useCallback, useState } from "react";
 
-import { uploadDataset } from "@/lib/api/datasets";
+import { deleteDataset, uploadDataset } from "@/lib/api/datasets";
 import type { DatasetRead } from "@/types/api";
 
 type UploadStatus = "idle" | "uploading" | "processed" | "error";
@@ -14,6 +14,12 @@ type UseDatasetUploadResult = {
   status: UploadStatus;
   uploadFile: (file: File) => Promise<DatasetRead>;
   reset: () => void;
+};
+
+type UseDatasetDeleteResult = {
+  deletingDatasetId: string | null;
+  deleteError: string | null;
+  removeDataset: (datasetId: string) => Promise<boolean>;
 };
 
 export function useDatasetUpload(): UseDatasetUploadResult {
@@ -62,5 +68,46 @@ export function useDatasetUpload(): UseDatasetUploadResult {
     status,
     uploadFile,
     reset,
+  };
+}
+
+export function useDatasetDelete(): UseDatasetDeleteResult {
+  const { getToken } = useAuth();
+  const [deletingDatasetId, setDeletingDatasetId] = useState<string | null>(
+    null
+  );
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const removeDataset = useCallback(
+    async (datasetId: string): Promise<boolean> => {
+      setDeletingDatasetId(datasetId);
+      setDeleteError(null);
+
+      try {
+        const token = await getToken({ template: "signalretention" });
+        if (!token) {
+          throw new Error("Unable to authenticate dataset deletion");
+        }
+
+        await deleteDataset(token, datasetId);
+        return true;
+      } catch (caughtError) {
+        setDeleteError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Unable to delete dataset"
+        );
+        return false;
+      } finally {
+        setDeletingDatasetId(null);
+      }
+    },
+    [getToken]
+  );
+
+  return {
+    deletingDatasetId,
+    deleteError,
+    removeDataset,
   };
 }

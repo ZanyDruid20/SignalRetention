@@ -10,6 +10,7 @@ from app.models.dataset import Dataset
 from app.models.user import User
 from app.schemas.dataset import DatasetRead
 from app.services.dataset_service import (
+    delete_user_dataset,
     get_user_dataset,
     list_datasets_for_user,
 )
@@ -67,3 +68,26 @@ async def get_dataset(
         raise HTTPException(status_code=404, detail=str(exc))
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
+
+
+@router.delete(
+    "/{dataset_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_dataset_route(
+    dataset_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    try:
+        await delete_user_dataset(db, current_user, dataset_id)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(exc),
+        ) from exc

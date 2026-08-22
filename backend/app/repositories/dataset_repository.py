@@ -71,3 +71,11 @@ async def update_dataset_upload_metadata(
     await db.refresh(dataset)
 
     return dataset
+
+
+async def delete_dataset(
+    db: AsyncSession,
+    dataset: Dataset,
+) -> None:
+    await db.delete(dataset)
+    await db.commit()
