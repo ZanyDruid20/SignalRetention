@@ -1,10 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { RiskTier } from "@/types/api";
 import type {
   CustomerExplorerRow,
@@ -37,6 +53,9 @@ type CustomerTableProps = {
   pageSize: number;
   total: number;
   totalPages: number;
+  deletingCustomerId: string | null;
+  deleteError: string | null;
+  onDeleteCustomer: (customerId: string) => Promise<boolean>;
   onPageChange: (page: number) => void;
 };
 
@@ -84,10 +103,22 @@ export function CustomerTable({
   pageSize,
   total,
   totalPages,
+  deletingCustomerId,
+  deleteError,
+  onDeleteCustomer,
   onPageChange,
 }: CustomerTableProps) {
+  const [customerToDelete, setCustomerToDelete] =
+    useState<CustomerExplorerRow | null>(null);
   const firstItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const lastItem = Math.min(page * pageSize, total);
+
+  async function confirmDelete() {
+    if (!customerToDelete) return;
+
+    const deleted = await onDeleteCustomer(customerToDelete.id);
+    if (deleted) setCustomerToDelete(null);
+  }
 
   return (
     <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
@@ -150,19 +181,36 @@ export function CustomerTable({
                     <StatusBadge status={customer.status} />
                   </td>
                   <td className="px-4 py-5 text-right">
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="icon"
-                      title={`View ${customer.customerName}`}
-                    >
-                      <Link
-                        href={`/customers/${customer.id}`}
-                        aria-label={`View ${customer.customerName}`}
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="icon"
+                        title={`View ${customer.customerName}`}
                       >
-                        <Eye className="size-4" />
-                      </Link>
-                    </Button>
+                        <Link
+                          href={`/customers/${customer.id}`}
+                          aria-label={`View ${customer.customerName}`}
+                        >
+                          <Eye className="size-4" />
+                        </Link>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        title={`Delete ${customer.customerName}`}
+                        aria-label={`Delete ${customer.customerName}`}
+                        disabled={deletingCustomerId !== null}
+                        onClick={() => setCustomerToDelete(customer)}
+                      >
+                        {deletingCustomerId === customer.id ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="size-4" />
+                        )}
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -213,6 +261,49 @@ export function CustomerTable({
           </div>
         </div>
       </CardContent>
+
+      <Dialog
+        open={customerToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && deletingCustomerId === null) setCustomerToDelete(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete customer?</DialogTitle>
+            <DialogDescription>
+              This permanently deletes {customerToDelete?.customerName} and its
+              related prediction and recommendations. This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          {deleteError && (
+            <p role="alert" className="text-sm text-red-700">
+              {deleteError}
+            </p>
+          )}
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" disabled={deletingCustomerId !== null}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={deletingCustomerId !== null}
+              onClick={() => void confirmDelete()}
+            >
+              {deletingCustomerId !== null && (
+                <Loader2 className="size-4 animate-spin" />
+              )}
+              Delete customer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

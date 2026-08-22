@@ -1,4 +1,4 @@
-import { apiGet } from "@/lib/api/client";
+import { apiDelete, apiGet } from "@/lib/api/client";
 import type { CustomerDetail, CustomerExplorerPage, CustomerRead, RiskTier } from "@/types/api";
 
 export type CustomerExplorerParams = {
@@ -64,5 +64,15 @@ export async function getCustomerExplorerPage(
   return apiGet<CustomerExplorerPage>(
     `/customers/dataset/${encodeURIComponent(datasetId)}/explorer?${query}`,
     token
+  );
+}
+
+export async function deleteCustomer(
+  token: string,
+  customerId: string,
+): Promise<void> {
+  return apiDelete(
+    `/customers/${encodeURIComponent(customerId)}`,
+    token,
   );
 }

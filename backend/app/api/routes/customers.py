@@ -18,6 +18,7 @@ from app.schemas.customer import (
 from app.services.customer_service import (
     create_customer_for_dataset,
     create_customers_for_dataset_bulk,
+    delete_user_customer,
     get_customer_detail,
     get_user_customer,
     get_user_customer_explorer_page,
@@ -149,3 +150,30 @@ async def customer_detail_route(
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+@router.delete(
+    "/{customer_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_customer_route(
+    customer_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    try:
+        await delete_user_customer(
+            db,
+            current_user,
+            customer_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(exc),
+        ) from exc

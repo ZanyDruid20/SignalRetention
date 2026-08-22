@@ -8,9 +8,11 @@ from app.models.user import User
 from app.repositories.customer_repository import (
     create_customer,
     create_customers_bulk,
+    delete_customer,
     get_customer_by_id,
     get_customer_explorer_page,
     list_customers_by_dataset_id,
+   
 )
 
 from app.schemas.prediction import PredictionRead
@@ -185,3 +187,16 @@ async def get_customer_detail(
         for recommendation in recommendations
     ],
 )
+
+
+async def delete_user_customer(
+    db: AsyncSession,
+    current_user: User,
+    customer_id: uuid.UUID,
+) -> None:
+    customer = await get_user_customer(
+        db,
+        current_user,
+        customer_id,
+    )
+    await delete_customer(db, customer)

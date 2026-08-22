@@ -131,3 +131,11 @@ async def create_customers_bulk(
         await db.refresh(customer)
 
     return customers
+
+
+async def delete_customer(
+    db: AsyncSession,
+    customer: Customer,
+) -> None:
+    await db.delete(customer)
+    await db.commit()

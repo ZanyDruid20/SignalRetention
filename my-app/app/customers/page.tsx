@@ -76,7 +76,10 @@ export default function CustomersPage() {
     totalPages,
     isLoading,
     error,
+    deletingCustomerId,
+    deleteError,
     hasDataset,
+    removeCustomer,
     refresh,
   } = useCustomerExplorer(explorerFilters);
 
@@ -169,6 +172,9 @@ export default function CustomersPage() {
               pageSize={PAGE_SIZE}
               total={total}
               totalPages={totalPages}
+              deletingCustomerId={deletingCustomerId}
+              deleteError={deleteError}
+              onDeleteCustomer={removeCustomer}
               onPageChange={setPage}
             />
           </>

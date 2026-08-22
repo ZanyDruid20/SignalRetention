@@ -3,7 +3,10 @@
 import { useAuth } from "@clerk/nextjs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { getCustomerExplorerPage } from "@/lib/api/customer";
+import {
+  deleteCustomer,
+  getCustomerExplorerPage,
+} from "@/lib/api/customer";
 import { listDatasets } from "@/lib/api/datasets";
 import type { CustomerExplorerPage, DatasetRead, RiskTier } from "@/types/api";
 import type {
@@ -33,7 +36,10 @@ type UseCustomerExplorerResult = {
   totalPages: number;
   isLoading: boolean;
   error: string | null;
+  deletingCustomerId: string | null;
+  deleteError: string | null;
   hasDataset: boolean;
+  removeCustomer: (customerId: string) => Promise<boolean>;
   refresh: () => Promise<void>;
 };
 
@@ -70,6 +76,10 @@ export function useCustomerExplorer(
   const [dataset, setDataset] = useState<DatasetRead | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(
+    null
+  );
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const loadCustomers = useCallback(async () => {
     setIsLoading(true);
@@ -113,6 +123,36 @@ export function useCustomerExplorer(
       setIsLoading(false);
     }
   }, [filters, getToken]);
+
+  const removeCustomer = useCallback(
+    async (customerId: string): Promise<boolean> => {
+      setDeletingCustomerId(customerId);
+      setDeleteError(null);
+
+      try {
+        const token = await getToken({ template: "signalretention" });
+        if (!token) {
+          throw new Error("Unable to authenticate customer deletion");
+        }
+
+        await deleteCustomer(token, customerId);
+        await loadCustomers();
+
+        return true;
+      } catch (caughtError) {
+        setDeleteError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Unable to delete customer"
+        );
+
+        return false;
+      } finally {
+        setDeletingCustomerId(null);
+      }
+    },
+    [getToken, loadCustomers]
+  );
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -165,7 +205,10 @@ export function useCustomerExplorer(
     totalPages: result?.total_pages ?? 0,
     isLoading,
     error,
+    deletingCustomerId,
+    deleteError,
     hasDataset: dataset !== null,
+    removeCustomer,
     refresh: loadCustomers,
   };
 }
