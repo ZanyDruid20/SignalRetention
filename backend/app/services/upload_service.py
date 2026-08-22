@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.dataset import Dataset
 from app.models.user import User
-from app.repositories.prediction_repository import create_prediction
+from app.repositories.prediction_repository import create_predictions_bulk
 from app.services.dataset_service import (
     complete_user_dataset_upload,
     create_dataset_for_user,
@@ -70,6 +70,7 @@ async def process_dataset_upload(
         if len(prediction_results) != len(customers):
             raise ValueError("ML prediction count does not match customer count")
 
+        predictions_data = []
         recommendation_data = []
         for customer, prediction_result in zip(customers, prediction_results):
             churn_probability = prediction_result["churn_probability"]
@@ -78,14 +79,20 @@ async def process_dataset_upload(
                 churn_probability=churn_probability,
                 model_version="xgboost-v1",
             )
-            prediction = await create_prediction(db, prediction_data)
+            predictions_data.append(prediction_data)
             recommendation_data.append(
                 build_recommendation(
                     customer_id=customer.id,
-                    risk_tier=prediction.risk_tier,
+                    risk_tier=prediction_data.risk_tier,
                     recommended_action=prediction_result["recommended_action"],
                     top_drivers=prediction_result["top_drivers"],
                 )
+            )
+
+        if predictions_data:
+            await create_predictions_bulk(
+                db=db,
+                predictions_data=predictions_data,
             )
 
         if recommendation_data:

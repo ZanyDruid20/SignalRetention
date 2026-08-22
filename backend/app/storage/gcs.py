@@ -1,3 +1,4 @@
+from google.api_core.exceptions import NotFound
 from google.cloud import storage
 
 from app.core.config import settings
@@ -47,4 +48,8 @@ def delete_blob_from_gcs(blob_path: str) -> None:
 
     bucket = get_gcs_bucket()
     blob = bucket.blob(blob_path)
-    blob.delete()
+    try:
+        blob.delete()
+    except NotFound:
+        # Deletion is idempotent: a missing object is already in the desired state.
+        return

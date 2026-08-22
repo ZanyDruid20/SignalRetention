@@ -5,6 +5,7 @@ from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import Customer
+from app.models.dataset import Dataset
 from app.models.prediction import Prediction
 from app.schemas.customer import CustomerCreate
 
@@ -127,10 +128,26 @@ async def create_customers_bulk(
     db.add_all(customers)
     await db.commit()
 
-    for customer in customers:
-        await db.refresh(customer)
-
     return customers
+
+
+async def count_customers_owned_by_user(
+    db: AsyncSession,
+    customer_ids: set[uuid.UUID],
+    user_id: uuid.UUID,
+) -> int:
+    if not customer_ids:
+        return 0
+
+    statement = (
+        select(func.count(Customer.id))
+        .join(Dataset, Dataset.id == Customer.dataset_id)
+        .where(
+            Customer.id.in_(customer_ids),
+            Dataset.user_id == user_id,
+        )
+    )
+    return int((await db.execute(statement)).scalar_one())
 
 
 async def delete_customer(

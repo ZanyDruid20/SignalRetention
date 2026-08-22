@@ -70,9 +70,6 @@ async def create_recommendations_bulk(
     db.add_all(recommendations)
     await db.commit()
 
-    for recommendation in recommendations:
-        await db.refresh(recommendation)
-
     return recommendations
 
 

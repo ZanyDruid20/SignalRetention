@@ -53,6 +53,21 @@ async def create_prediction(
     return prediction
 
 
+async def create_predictions_bulk(
+    db: AsyncSession,
+    predictions_data: list[PredictionCreate],
+) -> list[Prediction]:
+    predictions = [
+        Prediction(**prediction_data.model_dump())
+        for prediction_data in predictions_data
+    ]
+
+    db.add_all(predictions)
+    await db.commit()
+
+    return predictions
+
+
 async def get_prediction_overview(
     db: AsyncSession,
     dataset_id: uuid.UUID,

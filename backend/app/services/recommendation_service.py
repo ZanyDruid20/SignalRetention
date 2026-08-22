@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.recommendation import Recommendation
 from app.models.user import User
+from app.repositories.customer_repository import count_customers_owned_by_user
 from app.repositories.recommendation_repository import (
     create_recommendation,
     create_recommendations_bulk,
@@ -84,8 +85,20 @@ async def create_recommendations_for_customers_bulk(
     current_user: User,
     recommendations_data: list[RecommendationCreate],
 ) -> list[Recommendation]:
-    for recommendation_data in recommendations_data:
-        await get_user_customer(db, current_user, recommendation_data.customer_id)
+    customer_ids = {
+        recommendation_data.customer_id
+        for recommendation_data in recommendations_data
+    }
+    owned_customer_count = await count_customers_owned_by_user(
+        db,
+        customer_ids,
+        current_user.id,
+    )
+    if owned_customer_count != len(customer_ids):
+        raise PermissionError(
+            "One or more recommendations target an unauthorized customer"
+        )
+
     return await create_recommendations_bulk(db, recommendations_data)
 
 
