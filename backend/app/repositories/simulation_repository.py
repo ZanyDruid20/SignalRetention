@@ -20,7 +20,11 @@ async def list_simulations_by_user_id(
     db: AsyncSession,
     user_id: uuid.UUID,
 ) -> list[Simulation]:
-    statement = select(Simulation).where(Simulation.user_id == user_id)
+    statement = (
+        select(Simulation)
+        .where(Simulation.user_id == user_id)
+        .order_by(Simulation.created_at.desc())
+    )
     result = await db.execute(statement)
     return list(result.scalars().all())
 

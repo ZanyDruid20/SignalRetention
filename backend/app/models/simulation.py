@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, func
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -25,24 +25,56 @@ class Simulation(Base):
         index=True,
     )
 
-    strategy_name: Mapped[str] = mapped_column(
-        String(255),
+    dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("datasets.id"),
+        nullable=False,
+        index=True,
+    )
+
+    intervention_type: Mapped[str] = mapped_column(
+        String(50),
         nullable=False,
     )
 
-    discount_percentage: Mapped[Decimal | None] = mapped_column(
-        Numeric(5, 2),
-        nullable=True,
+    target_segment: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
     )
 
-    predicted_churn_reduction: Mapped[Decimal | None] = mapped_column(
+    intensity_percentage: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    targeted_customers: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    estimated_customers_retained: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    predicted_churn_reduction: Mapped[Decimal] = mapped_column(
         Numeric(5, 4),
-        nullable=True,
+        nullable=False,
     )
 
-    estimated_revenue_saved: Mapped[Decimal | None] = mapped_column(
+    estimated_revenue_saved: Mapped[Decimal] = mapped_column(
         Numeric(12, 2),
-        nullable=True,
+        nullable=False,
+    )
+
+    estimated_cost: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2),
+        nullable=False,
+    )
+
+    roi: Mapped[Decimal] = mapped_column(
+        Numeric(10, 4),
+        nullable=False,
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -55,3 +87,5 @@ class Simulation(Base):
         "User",
         back_populates="simulations",
     )
+
+    dataset = relationship("Dataset")
