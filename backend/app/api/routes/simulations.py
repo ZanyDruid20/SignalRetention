@@ -8,7 +8,7 @@ from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
 from app.models.simulation import Simulation
 from app.models.user import User
-from app.schemas.simulation import SimulationCreate, SimulationRead
+from app.schemas.simulation import SimulationRead, SimulationRequest
 from app.services.simulation_service import (
     create_simulation_for_user,
     get_user_simulation,
@@ -48,7 +48,7 @@ async def get_simulation(
     dependencies=[Depends(rate_limit("simulation_create", 20, 60))],
 )
 async def create_simulation(
-    simulation_data: SimulationCreate,
+    simulation_data: SimulationRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> Simulation:
