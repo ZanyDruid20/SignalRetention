@@ -1,6 +1,8 @@
 export type RiskTier = "Low" | "Medium" | "High" | "Critical";
 export type RecommendationPriority = "urgent" | "high" | "medium" | "low";
 export type RecommendationStatus = "new" | "in_progress" | "completed";
+export type InterventionType = "discount" | "onboarding" | "training" | "support";
+export type SimulationTargetSegment = "high-risk" | "medium-risk" | "low-risk";
 
 export type ChurnDriver = {
     feature: string;
@@ -178,12 +180,21 @@ export type DashboardSummary = {
     risk_tier_counts: RiskTierCount[];
 };
 
-export type SimulationRead = {
+export type SimulationRequest = {
+    dataset_id: string;
+    intervention_type: InterventionType;
+    target_segment: SimulationTargetSegment;
+    intensity_percentage: number;
+}
+
+export type SimulationRead = SimulationRequest & {
     id: string;
     user_id: string;
-    strategy_name: string;
-    discount_percentage: string | null;
-    predicted_churn_reduction: string | null;
-    estimated_revenue_saved: string | null;
+    targeted_customers: number;
+    estimated_customers_retained: number;
+    predicted_churn_reduction: string;
+    estimated_revenue_saved: string;
+    estimated_cost: string;
+    roi: string;
     created_at: string;
 }

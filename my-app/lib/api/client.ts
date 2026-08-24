@@ -80,3 +80,27 @@ export async function apiDelete(
     );
   }
 }
+
+export async function apiPost<T, TBody>(
+  path: string,
+  token: string,
+  body: TBody,
+): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      errorText || `API request failed with status ${response.status}`,
+    );
+  }
+
+  return response.json();
+}

@@ -1,4 +1,10 @@
-import type { RecommendationPriority, RecommendationStatus, RiskTier } from "./api";
+import type {
+  InterventionType,
+  RecommendationPriority,
+  RecommendationStatus,
+  RiskTier,
+  SimulationTargetSegment,
+} from "./api";
 
 export type CustomerStatus = "Active" | "Inactive" | "Unknown";
 
@@ -61,9 +67,15 @@ export type HighRiskCustomerRow = {
 
 export type SimulationResultView = {
   id: string;
-  strategyName: string;
-  interventionIntensity: number | null;
-  predictedChurnReduction: number | null;
-  estimatedRevenueSaved: number | null;
+  datasetId: string;
+  interventionType: InterventionType;
+  targetSegment: SimulationTargetSegment;
+  interventionIntensity: number;
+  targetedCustomers: number;
+  estimatedCustomersRetained: number;
+  predictedChurnReduction: number;
+  estimatedRevenueSaved: number;
+  estimatedCost: number;
+  roi: number;
   createdAt: string;
 };

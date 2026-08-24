@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { TrendingUp, ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2, TrendingUp } from "lucide-react";
+
+import { useSimulations } from "@/hooks/use-simulations";
+import type {
+  InterventionType,
+  SimulationTargetSegment,
+} from "@/types/api";
 
 import {
   Card,
@@ -23,13 +29,35 @@ import {
 import { Slider } from "@/components/ui/slider";
 
 export function ScenarioSimulator() {
-  const [intervention, setIntervention] = useState("discount");
-  const [segment, setSegment] = useState("high-risk");
+  const {
+    datasets,
+    result,
+    isLoading,
+    isRunning,
+    error,
+    runSimulation,
+  } = useSimulations();
+  const [datasetId, setDatasetId] = useState<string | null>(null);
+  const [intervention, setIntervention] =
+    useState<InterventionType>("discount");
+  const [segment, setSegment] =
+    useState<SimulationTargetSegment>("high-risk");
   const [intensity, setIntensity] = useState([50]);
-  const [showResults, setShowResults] = useState(false);
+  const selectedDatasetId = datasetId ?? datasets[0]?.id ?? "";
 
-  const runSimulation = () => {
-    setShowResults(true);
+  const handleRunSimulation = async () => {
+    if (!selectedDatasetId) return;
+
+    try {
+      await runSimulation({
+        dataset_id: selectedDatasetId,
+        intervention_type: intervention,
+        target_segment: segment,
+        intensity_percentage: intensity[0],
+      });
+    } catch {
+      // The hook exposes the request error for display below.
+    }
   };
 
   return (
@@ -49,12 +77,46 @@ export function ScenarioSimulator() {
           <div className="space-y-8">
             <div>
               <label className="mb-3 block text-xl font-semibold">
+                Dataset
+              </label>
+
+              <Select
+                value={selectedDatasetId}
+                onValueChange={setDatasetId}
+                disabled={isLoading || datasets.length === 0}
+              >
+                <SelectTrigger className="h-14">
+                  <SelectValue
+                    placeholder={isLoading ? "Loading datasets..." : "Select dataset"}
+                  />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {datasets.map((dataset) => (
+                    <SelectItem key={dataset.id} value={dataset.id}>
+                      {dataset.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {!isLoading && datasets.length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Upload and process a dataset before running a simulation.
+                </p>
+              ) : null}
+            </div>
+
+            <div>
+              <label className="mb-3 block text-xl font-semibold">
                 Intervention Type
               </label>
 
               <Select
                 value={intervention}
-                onValueChange={setIntervention}
+                onValueChange={(value) =>
+                  setIntervention(value as InterventionType)
+                }
               >
                 <SelectTrigger className="h-14">
                   <SelectValue />
@@ -87,7 +149,9 @@ export function ScenarioSimulator() {
 
               <Select
                 value={segment}
-                onValueChange={setSegment}
+                onValueChange={(value) =>
+                  setSegment(value as SimulationTargetSegment)
+                }
               >
                 <SelectTrigger className="h-14">
                   <SelectValue />
@@ -123,6 +187,7 @@ export function ScenarioSimulator() {
               <Slider
                 value={intensity}
                 onValueChange={setIntensity}
+                min={1}
                 max={100}
                 step={1}
               />
@@ -134,12 +199,28 @@ export function ScenarioSimulator() {
             </div>
 
             <Button
-              onClick={runSimulation}
+              onClick={handleRunSimulation}
+              disabled={!selectedDatasetId || isRunning}
               className="h-14 w-full bg-[#5A3B26] hover:bg-[#4A2F1E]"
             >
-              Run Simulation
-              <ArrowRight className="ml-2 h-5 w-5" />
+              {isRunning ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Running Simulation
+                </>
+              ) : (
+                <>
+                  Run Simulation
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </>
+              )}
             </Button>
+
+            {error ? (
+              <p role="alert" className="text-sm text-destructive">
+                Unable to run the simulation. Please try again.
+              </p>
+            ) : null}
           </div>
 
           <div className="rounded-xl bg-[#F8F5F0] p-6 dark:bg-muted/40">
@@ -147,7 +228,7 @@ export function ScenarioSimulator() {
               Projected Impact
             </h3>
 
-            {!showResults ? (
+            {!result ? (
               <div className="flex h-75 flex-col items-center justify-center text-center">
                 <TrendingUp className="mb-4 h-12 w-12 text-muted-foreground" />
 
@@ -163,7 +244,11 @@ export function ScenarioSimulator() {
                   </p>
 
                   <h4 className="text-2xl font-bold">
-                    $306,000
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    }).format(Number(result.estimated_revenue_saved))}
                   </h4>
                 </div>
 
@@ -173,7 +258,7 @@ export function ScenarioSimulator() {
                   </p>
 
                   <h4 className="text-2xl font-bold">
-                    15%
+                    {(Number(result.predicted_churn_reduction) * 100).toFixed(1)}%
                   </h4>
                 </div>
 
@@ -183,7 +268,7 @@ export function ScenarioSimulator() {
                   </p>
 
                   <h4 className="text-2xl font-bold">
-                    127
+                    {result.estimated_customers_retained.toLocaleString()}
                   </h4>
                 </div>
 
@@ -193,7 +278,7 @@ export function ScenarioSimulator() {
                   </p>
 
                   <h4 className="text-2xl font-bold">
-                    2.4x
+                    {Number(result.roi).toFixed(2)}x
                   </h4>
                 </div>
               </div>
