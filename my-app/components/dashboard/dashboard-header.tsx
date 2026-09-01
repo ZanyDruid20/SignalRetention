@@ -1,12 +1,15 @@
 "use client";
 
-import { RefreshCw, Bell } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 import { UserButton } from "@/components/auth/user-button";
 import { Button } from "@/components/ui/button";
 import { useAuthUser } from "@/hooks/use-auth-user";
 
-export function DashboardHeader() {
+export function DashboardHeader({ onRefresh, isRefreshing }: {
+    onRefresh: () => void;
+    isRefreshing: boolean;
+}) {
     const { user, isLoading, error } = useAuthUser();
 
     return (
@@ -26,16 +29,9 @@ export function DashboardHeader() {
             </div>
             {/* Right side */}
             <div className="flex items-center gap-3">
-                <Button variant="outline">
-                    Last 30 Days
-                </Button>
-
-                <Button variant="outline" size="icon">
-                    <RefreshCw className="h-4 w-4" />
-                </Button>
-
-                <Button variant="outline" size="icon">
-                    <Bell className="h-4 w-4" />
+                <Button variant="outline" size="icon" onClick={onRefresh}
+                    disabled={isRefreshing} aria-label="Refresh dashboard">
+                    <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
                 </Button>
                 <UserButton />
             </div>

@@ -174,10 +174,33 @@ export type RevenueMetrics = {
     estimated_revenue_saved: string | null;
 };
 
+export type HealthScoreBucket = {
+    category: string;
+    count: number;
+};
+
+export type RevenueByRiskTier = {
+    risk_tier: RiskTier;
+    monthly_revenue: string;
+};
+
+export type DashboardCustomer = {
+    customer_id: string;
+    customer_identifier: string;
+    health_score: number;
+    monthly_revenue: string | null;
+    risk_tier: RiskTier;
+    churn_probability: string;
+};
+
 export type DashboardSummary = {
     churn_metrics: ChurnMetrics;
     revenue_metrics: RevenueMetrics;
+    average_health_score: string | null;
     risk_tier_counts: RiskTierCount[];
+    health_score_distribution: HealthScoreBucket[];
+    revenue_by_risk_tier: RevenueByRiskTier[];
+    high_risk_customers: DashboardCustomer[];
 };
 
 export type SimulationRequest = {
