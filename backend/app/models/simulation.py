@@ -27,7 +27,7 @@ class Simulation(Base):
 
     dataset_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("datasets.id"),
+        ForeignKey("datasets.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -88,4 +88,7 @@ class Simulation(Base):
         back_populates="simulations",
     )
 
-    dataset = relationship("Dataset")
+    dataset = relationship(
+        "Dataset",
+        back_populates="simulations",
+    )

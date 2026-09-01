@@ -55,3 +55,10 @@ class Dataset(Base):
         back_populates="dataset",
         cascade="all, delete-orphan",
     )
+
+    simulations = relationship(
+        "Simulation",
+        back_populates="dataset",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
