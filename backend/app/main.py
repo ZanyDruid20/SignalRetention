@@ -9,6 +9,19 @@ from app.core.security import add_security_headers
 
 setup_logging()
 
+
+def get_allowed_origins(frontend_url: str) -> list[str]:
+    normalized_url = frontend_url.rstrip("/")
+    local_origins = {
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    }
+
+    if normalized_url in local_origins:
+        return sorted(local_origins)
+
+    return [normalized_url]
+
 app = FastAPI(
     title="SignalRetentionAPI",
     version="1.0.0",
@@ -16,11 +29,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        settings.frontend_url,
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=get_allowed_origins(settings.frontend_url),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -27,6 +27,28 @@ async def test_auth_me_rejects_missing_bearer_token(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "authorization",
+    [
+        "Basic credentials",
+        "Bearer",
+        "NotBearer malformed-token",
+    ],
+)
+async def test_auth_me_rejects_malformed_authorization_headers(
+    unauthenticated_client: AsyncClient,
+    authorization: str,
+) -> None:
+    response = await unauthenticated_client.get(
+        "/auth/me",
+        headers={"Authorization": authorization},
+    )
+
+    assert response.status_code == 401
+    assert "token" not in response.text.lower()
+
+
+@pytest.mark.asyncio
 async def test_api_responses_include_security_and_request_headers(
     client: AsyncClient,
 ) -> None:

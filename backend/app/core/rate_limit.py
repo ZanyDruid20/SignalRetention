@@ -1,24 +1,8 @@
-from fastapi import HTTPException, Request, status
+from fastapi import Depends, HTTPException, status
 
 from app.db.redis import redis_client
-
-
-def get_client_identifier(request: Request) -> str:
-    user_id = getattr(request.state, "user_id", None)
-
-    if user_id:
-        return f"user:{user_id}"
-
-    forwarded_for = request.headers.get("x-forwarded-for")
-    if forwarded_for:
-        client_ip = forwarded_for.split(",")[0].strip()
-        return f"ip:{client_ip}"
-
-    if request.client:
-        return f"ip:{request.client.host}"
-
-    return "ip:unknown"
-
+from app.dependencies.auth import get_current_user
+from app.models.user import User
 
 async def check_rate_limit(
     key: str,
@@ -50,8 +34,10 @@ def rate_limit(
     limit: int,
     window_seconds: int,
 ):
-    async def dependency(request: Request) -> None:
-        client_identifier = get_client_identifier(request)
+    async def dependency(
+        current_user: User = Depends(get_current_user),
+    ) -> None:
+        client_identifier = f"user:{current_user.id}"
         key = f"rate_limit:{name}:{client_identifier}"
 
         await check_rate_limit(

@@ -15,7 +15,10 @@ def verify_clerk_token(token: str) -> AuthUser:
         signing_key.key,
         algorithms=["RS256"],
         issuer=settings.clerk_issuer,
-        options={"verify_aud": False},
+        options={
+            "verify_aud": False,
+            "require": ["sub", "iat", "exp"],
+        },
         leeway=10,
     )
 
