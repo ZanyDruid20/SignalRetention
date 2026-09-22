@@ -15,6 +15,9 @@ class DatasetPredictionResult(TypedDict):
     recommended_action: str
 
 
+ML_BATCH_SIZE = 500
+
+
 def get_risk_tier(churn_probability: Decimal) -> RiskTier:
     """Convert churn probability into a business risk tier."""
     if churn_probability >= Decimal("0.80"):
@@ -114,24 +117,32 @@ async def build_prediction_from_customer_data(
 async def predict_dataset(
     customers_data: list[dict[str, Any]],
 ) -> list[DatasetPredictionResult]:
-    """Request batch predictions and explanations from the ML service."""
+    """Request predictions in bounded batches and preserve customer order."""
+    predictions: list[DatasetPredictionResult] = []
+
     async with httpx.AsyncClient(timeout=60.0) as client:
-        response = await client.post(
-            f"{settings.ml_service_url}/predict/batch",
-            json={"customers": customers_data},
-        )
+        for start in range(0, len(customers_data), ML_BATCH_SIZE):
+            customer_batch = customers_data[start : start + ML_BATCH_SIZE]
+            response = await client.post(
+                f"{settings.ml_service_url}/predict/batch",
+                json={"customers": customer_batch},
+            )
 
-    response.raise_for_status()
-    data = response.json()
+            response.raise_for_status()
+            data = response.json()
 
-    return [
-        {
-            "churn_probability": Decimal(str(item["churn_probability"])),
-            "top_drivers": [
-                ChurnDriver.model_validate(driver)
-                for driver in item.get("top_drivers", [])
-            ],
-            "recommended_action": item["recommended_action"],
-        }
-        for item in data["predictions"]
-    ]
+            predictions.extend(
+                {
+                    "churn_probability": Decimal(
+                        str(item["churn_probability"])
+                    ),
+                    "top_drivers": [
+                        ChurnDriver.model_validate(driver)
+                        for driver in item.get("top_drivers", [])
+                    ],
+                    "recommended_action": item["recommended_action"],
+                }
+                for item in data["predictions"]
+            )
+
+    return predictions
