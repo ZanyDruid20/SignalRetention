@@ -4,14 +4,15 @@ import { Button } from "@/components/ui/button";
 
 export function Navbar() {
   return (
-    <nav className="flex items-center justify-between p-8">
-      <h1 className="text-2xl font-bold">SignalRetention</h1>
+    <nav className="flex items-center justify-between gap-2 p-4 sm:p-8">
+      <h1 className="text-xl font-bold sm:text-2xl">SignalRetention</h1>
 
-      <div className="flex items-center gap-4">
+      <div className="flex shrink-0 items-center gap-1 sm:gap-4">
         <Button
           asChild
           variant="ghost"
-          className="transition-all duration-300 hover:scale-105"
+          size="sm"
+          className="transition-all duration-300 hover:scale-105 sm:h-9 sm:px-4"
         >
           <Link href="/sign-in">Sign In</Link>
         </Button>
@@ -19,7 +20,8 @@ export function Navbar() {
         <Button
           asChild
           variant="default"
-          className="transition-all duration-300 hover:scale-105"
+          size="sm"
+          className="transition-all duration-300 hover:scale-105 sm:h-9 sm:px-4"
         >
           <Link href="/sign-up">Get Started</Link>
         </Button>
