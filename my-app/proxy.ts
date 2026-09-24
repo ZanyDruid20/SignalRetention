@@ -23,5 +23,6 @@ export const config = {
     "/predictions(.*)",
     "/recommendations(.*)",
     "/settings(.*)",
+    "/__clerk/:path*",
   ],
 };
