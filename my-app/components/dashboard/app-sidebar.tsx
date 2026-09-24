@@ -26,6 +26,7 @@ import {
   SidebarGroupLabel,
   SidebarRail,
   SidebarSeparator,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useTheme } from "@/components/Theme/theme-provider";
@@ -77,14 +78,17 @@ export function AppSidebar() {
       className="border-r border-[#E7DED1] bg-[#F8F4EE] dark:border-border dark:bg-sidebar"
     >
       <SidebarHeader>
-        <div className="px-4 py-4">
-          <h2 className="text-xl font-bold">
-            SignalRetention
-          </h2>
+        <div className="flex items-start justify-between gap-2 px-4 py-4">
+          <div className="min-w-0">
+            <h2 className="truncate text-xl font-bold">
+              SignalRetention
+            </h2>
 
-          <p className="text-xs text-muted-foreground">
-            Customer Intelligence
-          </p>
+            <p className="truncate text-xs text-muted-foreground">
+              Customer Intelligence
+            </p>
+          </div>
+          <SidebarTrigger className="shrink-0" />
         </div>
       </SidebarHeader>
 
