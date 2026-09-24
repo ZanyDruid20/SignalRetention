@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 import {
   LayoutDashboard,
@@ -36,10 +37,18 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const { setOpenMobile } = useSidebar();
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const isDarkTheme = theme === "dark";
 
   function closeMobileSidebar() {
     setOpenMobile(false);
+  }
+
+  function navigationClass(url: string) {
+    const isHighlighted = hoveredItem === url || (hoveredItem === null && pathname === url);
+    return isHighlighted
+      ? "bg-[#E8E4DD] font-medium dark:bg-sidebar-accent"
+      : "hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent";
   }
 
   const mainItems = [
@@ -104,11 +113,9 @@ export function AppSidebar() {
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
                   asChild
-                  className={
-                    pathname === item.url
-                      ? "bg-[#E8E4DD] font-medium dark:bg-sidebar-accent"
-                      : "hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
-                  }
+                  className={navigationClass(item.url)}
+                  onMouseEnter={() => setHoveredItem(item.url)}
+                  onMouseLeave={() => setHoveredItem(null)}
                 >
                   <Link href={item.url} onClick={closeMobileSidebar}>
                     <item.icon />
@@ -131,11 +138,9 @@ export function AppSidebar() {
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
                   asChild
-                  className={
-                    pathname === item.url
-                      ? "bg-[#E8E4DD] font-medium dark:bg-sidebar-accent"
-                      : "hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
-                  }
+                  className={navigationClass(item.url)}
+                  onMouseEnter={() => setHoveredItem(item.url)}
+                  onMouseLeave={() => setHoveredItem(null)}
                 >
                   <Link href={item.url} onClick={closeMobileSidebar}>
                     <item.icon />
@@ -157,6 +162,8 @@ export function AppSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 className="hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
+                onMouseEnter={() => setHoveredItem("theme")}
+                onMouseLeave={() => setHoveredItem(null)}
                 onClick={() => setTheme(isDarkTheme ? "light" : "dark")}
               >
                 {isDarkTheme ? <Moon /> : <Sun />}
@@ -172,11 +179,9 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className={
-                pathname === "/settings"
-                  ? "bg-[#E8E4DD] font-medium dark:bg-sidebar-accent"
-                  : "hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
-              }
+              className={navigationClass("/settings")}
+              onMouseEnter={() => setHoveredItem("/settings")}
+              onMouseLeave={() => setHoveredItem(null)}
             >
               <Link href="/settings" onClick={closeMobileSidebar}>
                 <Settings />
