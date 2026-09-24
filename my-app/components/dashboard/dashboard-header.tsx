@@ -23,7 +23,7 @@ export function DashboardHeader({ onRefresh, isRefreshing }: {
                     {isLoading
                         ? "Loading account..."
                         : error
-                          ? "Unable to verify backend account"
+                          ? "Account details are temporarily unavailable"
                           : `Monitor and analyze customer retention metrics for ${user?.name ?? "your account"}`}
                 </p>
             </div>
