@@ -24,7 +24,9 @@ import {
   SidebarMenuItem,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarRail,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useTheme } from "@/components/Theme/theme-provider";
 import { UserButton } from "@/components/auth/user-button";
@@ -32,7 +34,12 @@ import { UserButton } from "@/components/auth/user-button";
 export function AppSidebar() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
+  const { setOpenMobile } = useSidebar();
   const isDarkTheme = theme === "dark";
+
+  function closeMobileSidebar() {
+    setOpenMobile(false);
+  }
 
   const mainItems = [
     {
@@ -99,7 +106,7 @@ export function AppSidebar() {
                       : "hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
                   }
                 >
-                  <Link href={item.url}>
+                  <Link href={item.url} onClick={closeMobileSidebar}>
                     <item.icon />
                     <span>{item.title}</span>
                   </Link>
@@ -126,7 +133,7 @@ export function AppSidebar() {
                       : "hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
                   }
                 >
-                  <Link href={item.url}>
+                  <Link href={item.url} onClick={closeMobileSidebar}>
                     <item.icon />
                     <span>{item.title}</span>
                   </Link>
@@ -167,7 +174,7 @@ export function AppSidebar() {
                   : "hover:bg-[#F1ECE4] dark:hover:bg-sidebar-accent"
               }
             >
-              <Link href="/settings">
+              <Link href="/settings" onClick={closeMobileSidebar}>
                 <Settings />
                 <span>Settings</span>
               </Link>
@@ -191,6 +198,7 @@ export function AppSidebar() {
           </div>
         </div>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }
