@@ -80,11 +80,11 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-start justify-between gap-2 px-4 py-4">
           <div className="min-w-0">
-            <h2 className="truncate text-xl font-bold">
+            <h2 className="text-lg font-bold leading-6">
               SignalRetention
             </h2>
 
-            <p className="truncate text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Customer Intelligence
             </p>
           </div>
