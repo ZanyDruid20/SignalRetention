@@ -1,6 +1,7 @@
 import uuid
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
@@ -50,5 +51,19 @@ async def get_or_create_user(
     if existing_user is not None:
         return existing_user
 
-    return await create_user(db, user_data)
+    try:
+        return await create_user(db, user_data)
+    except IntegrityError:
+        await db.rollback()
+
+        # Multiple requests can arrive together when a user first signs in.
+        # If another request created the same Clerk user, return that row.
+        existing_user = await get_user_by_clerk_user_id(
+            db,
+            user_data.clerk_user_id,
+        )
+        if existing_user is not None:
+            return existing_user
+
+        raise
 
