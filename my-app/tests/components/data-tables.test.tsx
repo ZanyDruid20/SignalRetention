@@ -119,4 +119,25 @@ describe("RecommendationQueue", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Next/ })).toBeDisabled();
   });
+
+  it("supports numbered and direct page navigation", async () => {
+    const user = userEvent.setup();
+    const onPageChange = vi.fn();
+    render(
+      <RecommendationQueue
+        {...baseProps}
+        items={[]}
+        page={4}
+        total={100}
+        onPageChange={onPageChange}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Page 5" }));
+    expect(onPageChange).toHaveBeenCalledWith(5);
+
+    await user.type(screen.getByRole("spinbutton", { name: "Go to page" }), "9");
+    await user.click(screen.getByRole("button", { name: "Go" }));
+    expect(onPageChange).toHaveBeenCalledWith(9);
+  });
 });

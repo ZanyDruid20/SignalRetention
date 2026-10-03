@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import {
-  ChevronLeft,
-  ChevronRight,
   Eye,
   Loader2,
   Trash2,
@@ -12,6 +10,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TablePagination } from "@/components/ui/table-pagination";
 import {
   Dialog,
   DialogClose,
@@ -110,9 +109,6 @@ export function CustomerTable({
 }: CustomerTableProps) {
   const [customerToDelete, setCustomerToDelete] =
     useState<CustomerExplorerRow | null>(null);
-  const firstItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const lastItem = Math.min(page * pageSize, total);
-
   async function confirmDelete() {
     if (!customerToDelete) return;
 
@@ -229,37 +225,14 @@ export function CustomerTable({
           </table>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-[#D8CFC4] pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-[#3A312A]">
-          <p className="text-sm text-muted-foreground">
-            Showing {firstItem.toLocaleString()}-{lastItem.toLocaleString()} of{" "}
-            {total.toLocaleString()}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              <ChevronLeft className="size-4" />
-              Previous
-            </Button>
-            <span className="min-w-24 text-center text-sm font-medium">
-              Page {totalPages === 0 ? 0 : page} of {totalPages}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Next
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
-        </div>
+        <TablePagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          className="border-t border-[#D8CFC4] pt-4 dark:border-[#3A312A]"
+        />
       </CardContent>
 
       <Dialog

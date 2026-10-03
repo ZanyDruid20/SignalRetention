@@ -1,9 +1,10 @@
-import { Check, ChevronLeft, ChevronRight, Loader2, RotateCcw, Play, Search } from "lucide-react";
+import { Check, Loader2, RotateCcw, Play, Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { TablePagination } from "@/components/ui/table-pagination";
 import {
   Table,
   TableBody,
@@ -79,8 +80,6 @@ export function RecommendationQueue({
   onPageChange,
 }: RecommendationQueueProps) {
   const totalPages = Math.ceil(total / pageSize);
-  const firstItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const lastItem = Math.min(page * pageSize, total);
 
   return (
     <section>
@@ -200,37 +199,14 @@ export function RecommendationQueue({
           </Table>
         </div>
 
-        <div className="flex flex-col gap-3 border-t px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {firstItem.toLocaleString()}-{lastItem.toLocaleString()} of{" "}
-            {total.toLocaleString()}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              <ChevronLeft className="size-4" />
-              Previous
-            </Button>
-            <span className="min-w-24 text-center text-sm font-medium">
-              Page {totalPages === 0 ? 0 : page} of {totalPages}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Next
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
-        </div>
+        <TablePagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          className="border-t px-6 py-4"
+        />
       </Card>
     </section>
   );

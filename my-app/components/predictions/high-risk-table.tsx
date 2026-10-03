@@ -1,8 +1,8 @@
 "use client";
 
-import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { TablePagination } from "@/components/ui/table-pagination";
 import {
   Card,
   CardContent,
@@ -56,9 +56,6 @@ export function HighRiskCustomersTable({
   totalPages,
   onPageChange,
 }: HighRiskCustomersTableProps) {
-  const firstItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const lastItem = Math.min(page * pageSize, total);
-
   return (
     <Card className="border-[#E7DED1] bg-white shadow-none dark:border-[#3A312A] dark:bg-[#1F1A16]">
       <CardHeader>
@@ -122,37 +119,14 @@ export function HighRiskCustomersTable({
           </table>
         </div>
 
-        <div className="flex flex-col gap-3 pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {firstItem.toLocaleString()}-{lastItem.toLocaleString()} of{" "}
-            {total.toLocaleString()}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              <ChevronLeft className="size-4" />
-              Previous
-            </Button>
-            <span className="min-w-24 text-center text-sm font-medium">
-              Page {totalPages === 0 ? 0 : page} of {totalPages}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Next
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
-        </div>
+        <TablePagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          className="pt-5"
+        />
       </CardContent>
     </Card>
   );
