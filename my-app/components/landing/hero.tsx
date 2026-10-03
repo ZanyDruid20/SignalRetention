@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import { MetricCard } from "@/components/landing/metric-card";
 
@@ -23,14 +25,16 @@ export function Hero() {
 
           <div className="mt-8 flex gap-4">
             <Button
+            asChild
             className="
             transition-all
             duration-300
             hover:scale-105
-            ">Get Started
+            ">
+              <Link href="/sign-up">Get Started</Link>
             </Button>
-            <Button variant="outline" className="transition-all duration-300 hover:scale-105">
-              Learn More
+            <Button asChild variant="outline" className="transition-all duration-300 hover:scale-105">
+              <Link href="#features">Learn More</Link>
             </Button>
           </div>
         </div>
@@ -40,6 +44,7 @@ export function Hero() {
           <MetricCard
             title="Revenue at Risk"
             value="$275,000"
+            trendTone="negative"
             trend="↓ 12.4% from last month"
           />
 

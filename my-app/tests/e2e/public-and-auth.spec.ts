@@ -11,9 +11,14 @@ test.describe("public landing page", () => {
       "href",
       "/sign-in",
     );
-    await expect(page.getByRole("link", { name: "Get Started" })).toHaveAttribute(
+    const getStartedLinks = page.getByRole("link", { name: "Get Started" });
+    await expect(getStartedLinks).toHaveCount(3);
+    for (const link of await getStartedLinks.all()) {
+      await expect(link).toHaveAttribute("href", "/sign-up");
+    }
+    await expect(page.getByRole("link", { name: "Learn More" })).toHaveAttribute(
       "href",
-      "/sign-up",
+      "#features",
     );
   });
 

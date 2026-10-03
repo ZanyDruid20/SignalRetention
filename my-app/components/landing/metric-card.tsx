@@ -1,15 +1,18 @@
 import {Card, CardContent, CardHeader, CardTitle,} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 type MetricCardProps = {
   title: string;
   value: string;
   trend: string;
+  trendTone?: "positive" | "negative";
 };
 
 export function MetricCard({
   title,
   value,
   trend,
+  trendTone = "positive",
 }: MetricCardProps) {
   return (
     <Card
@@ -27,7 +30,10 @@ export function MetricCard({
       <CardContent>
         <p className="text-5xl font-bold">{value}</p>
 
-        <p className="text-green-600 mt-2">
+        <p className={cn(
+          "mt-2",
+          trendTone === "negative" ? "text-red-600" : "text-green-600",
+        )}>
           {trend}
         </p>
       </CardContent>
