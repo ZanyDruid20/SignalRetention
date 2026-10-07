@@ -1,11 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { DataSetsUploader } from "@/components/datasets/datasets-uploader";
 import { makeDataset } from "@/tests/fixtures/factories";
 
 describe("DataSetsUploader", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("uploads the selected CSV and reports completion", async () => {
     const user = userEvent.setup();
     const dataset = makeDataset();
@@ -50,5 +54,34 @@ describe("DataSetsUploader", () => {
     expect(
       screen.getByRole("button", { name: "Choose another CSV file" }),
     ).toBeEnabled();
+  });
+
+  it("uploads the bundled demo dataset", async () => {
+    const user = userEvent.setup();
+    const dataset = makeDataset({ filename: "signal-retention-demo.csv" });
+    const onUploadFile = vi.fn().mockResolvedValue(dataset);
+    const onUploadComplete = vi.fn();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      blob: async () => new Blob(["customerID\nCUST-001"], { type: "text/csv" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <DataSetsUploader
+        error={null}
+        status="idle"
+        onUploadFile={onUploadFile}
+        onUploadComplete={onUploadComplete}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Use Demo Dataset" }));
+
+    expect(fetchMock).toHaveBeenCalledWith("/demo/signal-retention-demo.csv");
+    expect(onUploadFile).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "signal-retention-demo.csv" }),
+    );
+    expect(onUploadComplete).toHaveBeenCalledWith(dataset);
   });
 });

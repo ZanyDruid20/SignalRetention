@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AlertCircle, CheckCircle, FileText, Upload } from "lucide-react";
+import { AlertCircle, CheckCircle, FileText, Sparkles, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +32,7 @@ export function DataSetsUploader({
   onUploadComplete,
 }: DataSetsUploaderProps) {
   const [fileName, setFileName] = useState("");
+  const [demoError, setDemoError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const attachmentState =
@@ -52,19 +53,41 @@ export function DataSetsUploader({
           ? (error ?? "Upload failed. Please try again.")
           : "CSV file";
 
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  async function uploadFile(file: File) {
     setFileName(file.name);
+    setDemoError(null);
 
     try {
       const dataset = await onUploadFile(file);
       onUploadComplete?.(dataset);
     } catch (error) {
       console.error("Error uploading file:", error);
-    } finally {
-      event.target.value = "";
+    }
+  }
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    await uploadFile(file);
+    event.target.value = "";
+  }
+
+  async function handleDemoDataset() {
+    try {
+      setDemoError(null);
+      const response = await fetch("/demo/signal-retention-demo.csv");
+      if (!response.ok) throw new Error("Unable to load the demo dataset");
+
+      const file = new File(
+        [await response.blob()],
+        "signal-retention-demo.csv",
+        { type: "text/csv" },
+      );
+      await uploadFile(file);
+    } catch (error) {
+      console.error("Error loading demo dataset:", error);
+      setDemoError("The demo dataset could not be loaded. Please try again.");
     }
   }
 
@@ -82,7 +105,33 @@ export function DataSetsUploader({
         </p>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-5">
+        <div className="flex flex-col gap-4 rounded-lg border border-[#D8CFC4] bg-[#F8F4EE] p-4 sm:flex-row sm:items-center sm:justify-between dark:border-[#3A312A] dark:bg-muted/40">
+          <div>
+            <p className="font-semibold">Try SignalRetention with demo data</p>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              This demo currently supports the Telco Customer Churn CSV schema.
+              Support for additional dataset formats is planned for a future release.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="shrink-0"
+            disabled={status === "uploading"}
+            onClick={() => void handleDemoDataset()}
+          >
+            <Sparkles className="size-4" />
+            Use Demo Dataset
+          </Button>
+        </div>
+
+        {demoError && (
+          <p role="alert" className="text-sm text-red-700">
+            {demoError}
+          </p>
+        )}
+
         {status === "idle" ? (
           <label className="flex min-h-56 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#D8CFC4] bg-[#FCFAF7] p-8 text-center transition hover:bg-[#F8F4EE] dark:border-[#3A312A] dark:bg-muted/30 dark:hover:bg-muted/50">
             <>

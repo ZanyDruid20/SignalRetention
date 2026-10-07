@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import type { ComponentType } from "react";
 import {
+  ArrowLeft,
   BellDot,
   Check,
   Monitor,
@@ -30,6 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useTheme } from "@/components/Theme/theme-provider";
+import { useAuthUser } from "@/hooks/use-auth-user";
 
 type ThemeOption = "light" | "dark" | "system";
 
@@ -38,6 +41,13 @@ type NotificationKey =
   | "datasetProcessingUpdates"
   | "predictionCompletionUpdates"
   | "weeklySummary";
+
+const defaultNotifications: Record<NotificationKey, boolean> = {
+  criticalRiskAlerts: true,
+  datasetProcessingUpdates: true,
+  predictionCompletionUpdates: false,
+  weeklySummary: true,
+};
 
 const themeOptions: {
   value: ThemeOption;
@@ -94,10 +104,12 @@ const notificationOptions: {
 
 function PreferenceToggle({
   checked,
+  disabled = false,
   label,
   onCheckedChange,
 }: {
   checked: boolean;
+  disabled?: boolean;
   label: string;
   onCheckedChange: (checked: boolean) => void;
 }) {
@@ -107,6 +119,7 @@ function PreferenceToggle({
       <input
         type="checkbox"
         checked={checked}
+        disabled={disabled}
         onChange={(event) => onCheckedChange(event.target.checked)}
         className="peer sr-only"
       />
@@ -124,21 +137,74 @@ function PreferenceToggle({
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const { user, isLoading: isLoadingUser, error: userError } = useAuthUser();
   const [profile, setProfile] = useState({
-    fullName: "Maya Chen",
-    email: "maya@signalretention.com",
     company: "SignalRetention",
     role: "admin",
   });
-
   const [notifications, setNotifications] = useState<
     Record<NotificationKey, boolean>
-  >({
-    criticalRiskAlerts: true,
-    datasetProcessingUpdates: true,
-    predictionCompletionUpdates: false,
-    weeklySummary: true,
-  });
+  >(defaultNotifications);
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [preferencesSaved, setPreferencesSaved] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  const storageKey = user ? `signalretention-settings:${user.id}` : null;
+
+  useEffect(() => {
+    if (!storageKey) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setProfile({ company: "SignalRetention", role: "admin" });
+      setNotifications(defaultNotifications);
+
+      try {
+        const saved = window.localStorage.getItem(storageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved) as {
+            company?: string;
+            role?: string;
+            notifications?: Partial<Record<NotificationKey, boolean>>;
+          };
+          setProfile({
+            company: parsed.company ?? "SignalRetention",
+            role: parsed.role ?? "admin",
+          });
+          setNotifications({
+            ...defaultNotifications,
+            ...parsed.notifications,
+          });
+        }
+      } catch {
+        window.localStorage.removeItem(storageKey);
+      } finally {
+        setSettingsLoaded(true);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [storageKey]);
+
+  function saveSettings(kind: "profile" | "preferences") {
+    if (!storageKey) return;
+
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        company: profile.company,
+        role: profile.role,
+        notifications,
+      }),
+    );
+
+    if (kind === "profile") {
+      setProfileSaved(true);
+      window.setTimeout(() => setProfileSaved(false), 2500);
+    } else {
+      setPreferencesSaved(true);
+      window.setTimeout(() => setPreferencesSaved(false), 2500);
+    }
+  }
 
   function updateProfile(field: keyof typeof profile, value: string) {
     setProfile((current) => ({
@@ -157,16 +223,24 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-[#FCFAF7] dark:bg-background">
       <header className="border-b border-[#E7DED1] bg-[#FCFAF7] px-6 py-8 dark:border-border dark:bg-background md:px-12">
-        <div className="mx-auto max-w-6xl">
-          <p className="text-sm font-semibold uppercase tracking-wide text-[#A53D13]">
-            SignalRetention
-          </p>
-          <h1 className="mt-2 text-3xl font-bold text-[#2F2118] dark:text-foreground md:text-4xl">
-            Settings
-          </h1>
-          <p className="mt-2 max-w-2xl text-base text-muted-foreground md:text-lg">
-            Manage your profile, preferences, and application appearance.
-          </p>
+        <div className="mx-auto flex max-w-6xl flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-[#A53D13]">
+              SignalRetention
+            </p>
+            <h1 className="mt-2 text-3xl font-bold text-[#2F2118] dark:text-foreground md:text-4xl">
+              Settings
+            </h1>
+            <p className="mt-2 max-w-2xl text-base text-muted-foreground md:text-lg">
+              Manage your profile, preferences, and application appearance.
+            </p>
+          </div>
+          <Button asChild variant="outline" className="w-fit shrink-0">
+            <Link href="/dashboard">
+              <ArrowLeft className="size-4" />
+              Back to Home
+            </Link>
+          </Button>
         </div>
       </header>
 
@@ -195,10 +269,9 @@ export default function SettingsPage() {
                   Full Name
                 </label>
                 <Input
-                  value={profile.fullName}
-                  onChange={(event) =>
-                    updateProfile("fullName", event.target.value)
-                  }
+                  value={isLoadingUser ? "Loading account..." : (user?.name ?? "")}
+                  readOnly
+                  aria-readonly="true"
                   className="h-12 rounded-xl border-[#E7DED1] bg-[#FCFAF7] dark:border-border dark:bg-input/30"
                 />
               </div>
@@ -209,10 +282,9 @@ export default function SettingsPage() {
                 </label>
                 <Input
                   type="email"
-                  value={profile.email}
-                  onChange={(event) =>
-                    updateProfile("email", event.target.value)
-                  }
+                  value={isLoadingUser ? "Loading account..." : (user?.email ?? "")}
+                  readOnly
+                  aria-readonly="true"
                   className="h-12 rounded-xl border-[#E7DED1] bg-[#FCFAF7] dark:border-border dark:bg-input/30"
                 />
               </div>
@@ -223,6 +295,7 @@ export default function SettingsPage() {
                 </label>
                 <Input
                   value={profile.company}
+                  disabled={!settingsLoaded}
                   onChange={(event) =>
                     updateProfile("company", event.target.value)
                   }
@@ -236,6 +309,7 @@ export default function SettingsPage() {
                 </label>
                 <Select
                   value={profile.role}
+                  disabled={!settingsLoaded}
                   onValueChange={(value) => updateProfile("role", value)}
                 >
                   <SelectTrigger className="h-12 w-full rounded-xl border-[#E7DED1] bg-[#FCFAF7] dark:border-border dark:bg-input/30">
@@ -251,10 +325,28 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <Button className="h-11 rounded-xl bg-[#5A3B26] px-5 hover:bg-[#4A2F1E]">
+            {userError && (
+              <p role="alert" className="text-sm text-red-700">
+                Account details are temporarily unavailable.
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              disabled={!user || !settingsLoaded}
+              onClick={() => saveSettings("profile")}
+              className="h-11 rounded-xl bg-[#5A3B26] px-5 hover:bg-[#4A2F1E]"
+            >
               <Save className="size-4" />
               Save Changes
             </Button>
+            {profileSaved && (
+              <span role="status" className="text-sm font-medium text-green-700">
+                Profile settings saved
+              </span>
+            )}
+            </div>
           </CardContent>
         </Card>
 
@@ -269,7 +361,7 @@ export default function SettingsPage() {
                   Notification Preferences
                 </CardTitle>
                 <CardDescription>
-                  Configure future in-app event preferences.
+                  Choose which in-app updates you want to follow.
                 </CardDescription>
               </div>
             </div>
@@ -277,9 +369,8 @@ export default function SettingsPage() {
 
           <CardContent className="space-y-5">
             <p className="rounded-xl border border-[#E7DED1] bg-[#FCFAF7] p-4 text-sm leading-6 text-muted-foreground dark:border-border dark:bg-muted/40">
-              These are application preference settings for future backend
-              events. They do not send messages or connect to notification
-              infrastructure in this MVP.
+              These preferences are saved for this account on this device.
+              Notifications are not sent externally in this demo release.
             </p>
 
             <div className="space-y-4">
@@ -298,6 +389,7 @@ export default function SettingsPage() {
                   </div>
                   <PreferenceToggle
                     checked={notifications[option.key]}
+                    disabled={!settingsLoaded}
                     label={option.label}
                     onCheckedChange={(checked) =>
                       updateNotification(option.key, checked)
@@ -362,10 +454,22 @@ export default function SettingsPage() {
               })}
             </div>
 
-            <Button className="h-11 rounded-xl bg-[#5A3B26] px-5 hover:bg-[#4A2F1E]">
+            <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              disabled={!user || !settingsLoaded}
+              onClick={() => saveSettings("preferences")}
+              className="h-11 rounded-xl bg-[#5A3B26] px-5 hover:bg-[#4A2F1E]"
+            >
               <Save className="size-4" />
               Save Preferences
             </Button>
+            {preferencesSaved && (
+              <span role="status" className="text-sm font-medium text-green-700">
+                Preferences saved
+              </span>
+            )}
+            </div>
           </CardContent>
         </Card>
       </main>
