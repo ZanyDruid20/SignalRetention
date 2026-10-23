@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/Theme/theme-provider";
@@ -42,6 +43,7 @@ export default function RootLayout({
       >
         <body suppressHydrationWarning>
           <ThemeProvider>{children}</ThemeProvider>
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
